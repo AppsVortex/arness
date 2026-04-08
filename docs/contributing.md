@@ -9,6 +9,15 @@ sidebar:
 
 Arness is open source (MIT). Contributions are welcome — whether fixing a bug in a skill, adding a new agent, or improving documentation.
 
+## Before You Start
+
+- **Found a bug?** [Open an issue](https://github.com/AppsVortex/arness/issues) with the bug report template
+- **Have a question?** Start a thread in [Discussions](https://github.com/AppsVortex/arness/discussions) — issues are for bugs and feature requests
+- **Want a new feature?** [Open an issue](https://github.com/AppsVortex/arness/issues) with the feature request template, or discuss the idea first in Discussions
+- **Ready to contribute code?** Fork the repo, follow the conventions below, and submit a PR
+
+Please be respectful and constructive in all interactions. See our [Code of Conduct](../CODE_OF_CONDUCT.md).
+
 ## Repository Structure
 
 ```
@@ -49,13 +58,11 @@ plugins/<plugin>/skills/<skill-name>/SKILL.md
 ---
 name: "skill-name"
 description: "This skill should be used when... [trigger conditions]"
-version: "1.0.0"
 ---
 ```
 
 - **name**: The command name (invoked as `/skill-name`)
 - **description**: Must start with "This skill should be used when..." — this is how Claude Code matches user intent to skills
-- **version**: Semver, bumped with changes
 
 Supporting files (references, scripts, examples) go in the same subdirectory as the SKILL.md.
 
@@ -112,7 +119,7 @@ When creating a PR, bump the `version` in the affected plugin's `.claude-plugin/
 | New features, new skills/agents, significant behavior changes | Minor | 2.0.0 → 2.1.0 |
 | Breaking changes requiring re-init | Major | 2.1.0 → 3.0.0 |
 
-Include the version bump in the PR commit, not as a separate commit.
+Also update the version in `.claude-plugin/marketplace.json` to match. Include both version bumps in the PR commit, not as separate commits.
 
 ## Testing Locally
 
@@ -134,4 +141,5 @@ claude --plugin-dir plugins/arn-infra
 3. Make your changes
 4. Test locally with `claude --plugin-dir`
 5. Bump the version in the affected plugin's `plugin.json`
-6. Submit a PR with a clear description of what changed and why
+6. Update `marketplace.json` if you bumped a plugin version
+7. Submit a PR with a clear description of what changed and why
