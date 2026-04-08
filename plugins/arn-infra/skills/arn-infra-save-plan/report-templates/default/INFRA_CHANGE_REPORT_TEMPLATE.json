@@ -1,0 +1,64 @@
+{
+  "reportType": "infra-change",
+  "projectName": "",
+  "phaseNumber": 0,
+  "planFile": "plans/PHASE_N_PLAN.md",
+  "reportDate": "",
+  "reportVersion": 1,
+  "environment": "",
+  "resourcesProvisioned": [
+    {
+      "resourceId": "",
+      "resourceType": "",
+      "provider": "",
+      "action": "create | modify | destroy",
+      "status": "completed | failed | skipped",
+      "costEstimate": ""
+    }
+  ],
+  "securityGate": {
+    "status": "passed | blocked | acknowledged",
+    "criticalFindings": 0,
+    "highFindings": 0,
+    "findings": [
+      {
+        "severity": "critical | high | medium | low",
+        "description": "",
+        "resource": "",
+        "remediation": ""
+      }
+    ]
+  },
+  "costGate": {
+    "status": "passed | exceeded | acknowledged",
+    "estimatedMonthlyCost": "",
+    "costThreshold": "",
+    "costDelta": ""
+  },
+  "rollbackCheckpoint": {
+    "created": false,
+    "checkpointPath": "",
+    "stateSnapshotPath": ""
+  },
+  "verification": {
+    "status": "passed | failed | skipped",
+    "healthChecks": [
+      {
+        "endpoint": "",
+        "status": "passed | failed",
+        "responseTime": ""
+      }
+    ],
+    "findings": []
+  },
+  "deploymentDetails": {
+    "method": "iac | platform-cli | ci-cd",
+    "tool": "",
+    "duration": "",
+    "applyOutput": ""
+  },
+  "pendingItems": [],
+  "blockers": [],
+  "nextSteps": [],
+  "additionalNotes": ""
+}

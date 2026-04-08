@@ -1,0 +1,33 @@
+{
+  "description": "PreToolUse hook template for prototype lock guard. The skill reads this template, substitutes project-specific protected paths, and writes the hook configuration to the target project's .claude/settings.json and the guard script to .claude/hooks/prototype-lock-guard.sh.",
+
+  "hooks_config": {
+    "hooks": {
+      "PreToolUse": [
+        {
+          "matcher": "Write|Edit",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "bash .claude/hooks/prototype-lock-guard.sh"
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "guard_script": "#!/usr/bin/env bash\n# prototype-lock-guard.sh\n# Blocks Write/Edit operations targeting locked prototype directories.\n# Reads tool invocation JSON from stdin; outputs decision JSON to stdout.\n# Always exits 0 (hooks must not crash).\n#\n# Installed by /arn-spark-prototype-lock. See ### Prototype Lock in CLAUDE.md.\n#\n# Protected paths are RELATIVE to the project root. The script resolves\n# them at runtime using the cwd field from the hook input, so no\n# user-specific absolute paths are committed.\n#\n# JSON parsing: tries jq -> python3 -> node (first available wins).\n# If none are found, allows the operation (fail-open -- CLAUDE.md rules\n# remain the primary defense).\n\nPROTECTED_PATHS=(\n  \"__PROTECTED_PATH_1__\"\n  \"__PROTECTED_PATH_2__\"\n  \"__PROTECTED_PATH_3__\"\n)\n\ninput=$(cat)\n\nparse_json() {\n  if command -v jq >/dev/null 2>&1; then\n    file_path=$(echo \"$input\" | jq -r '.tool_input.file_path // .tool_input.filePath // \"\"')\n    cwd=$(echo \"$input\" | jq -r '.cwd // \"\"')\n  elif command -v python3 >/dev/null 2>&1; then\n    eval \"$(echo \"$input\" | python3 -c \"\nimport sys, json\ntry:\n    d = json.load(sys.stdin)\n    ti = d.get('tool_input', {})\n    fp = ti.get('file_path', '') or ti.get('filePath', '')\n    cwd = d.get('cwd', '')\n    print(f'file_path={chr(34)}{fp}{chr(34)}')\n    print(f'cwd={chr(34)}{cwd}{chr(34)}')\nexcept:\n    print('file_path={0}{0}'.format(chr(34)))\n    print('cwd={0}{0}'.format(chr(34)))\n\" 2>/dev/null)\"\n  elif command -v node >/dev/null 2>&1; then\n    eval \"$(echo \"$input\" | node -e \"\nlet d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{\ntry{const j=JSON.parse(d);const ti=j.tool_input||{};\nconsole.log('file_path=\\\"'+(ti.file_path||ti.filePath||'')+'\\\"');\nconsole.log('cwd=\\\"'+(j.cwd||'')+'\\\"');\n}catch(e){console.log('file_path=\\\"\\\"');console.log('cwd=\\\"\\\"');}\n});\" 2>/dev/null)\"\n  else\n    file_path=\"\"\n    cwd=\"\"\n  fi\n}\n\nparse_json\n\nif [ -z \"$file_path\" ]; then\n  echo '{}'\n  exit 0\nfi\n\nfor protected in \"${PROTECTED_PATHS[@]}\"; do\n  resolved=\"${cwd}/${protected}\"\n  if [[ \"$file_path\" == \"$resolved\"* ]]; then\n    echo '{\"decision\":\"block\",\"reason\":\"This file is in the locked prototype directory. Prototype files are read-only reference artifacts. See ### Prototype Lock in CLAUDE.md.\"}'\n    exit 0\n  fi\ndone\n\necho '{}'\nexit 0",
+
+  "installation_notes": [
+    "The guard script and hook config are written to the TARGET PROJECT, not the arn-spark plugin.",
+    "Protected paths are RELATIVE to the project root (e.g., '.arness/prototypes/locked/'). The script resolves them at runtime using the cwd field from the hook input JSON, so no user-specific absolute paths are committed.",
+    "JSON parsing uses a fallback chain: jq (preferred, used in Claude Code docs) -> python3 -> node. If none are available, the hook allows the operation (fail-open) and CLAUDE.md rules serve as the primary defense.",
+    "The script reads JSON from stdin (tool invocation), extracts file_path and cwd, resolves relative protected paths against cwd, and checks for matches.",
+    "If protected: outputs block decision with reason. If not: outputs empty JSON (allow).",
+    "Always exits 0 -- hooks must never crash or the tool call will fail.",
+    "The skill merges the hooks_config into the existing .claude/settings.json (preserving other settings).",
+    "If .claude/settings.json already has PreToolUse hooks, the prototype guard is appended to the existing list.",
+    "The hook guards Write and Edit tool calls only. Bash commands that modify the filesystem are not intercepted -- the CLAUDE.md rules are the primary defense for those operations."
+  ]
+}

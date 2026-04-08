@@ -1,0 +1,55 @@
+{
+  "reportType": "task-review",
+  "projectName": "",
+  "taskId": "",
+  "taskDescription": "",
+  "phaseNumber": 0,
+  "planFile": "plans/PHASE_N_PLAN.md",
+  "reviewDate": "",
+  "reportVersion": 1,
+  "summary": {
+    "totalChecks": 0,
+    "errors": 0,
+    "warnings": 0,
+    "filesInspected": 0,
+    "patternsChecked": 0,
+    "testsReRun": 0,
+    "testsPassedOnReview": 0
+  },
+  "acceptanceCriteria": [
+    {
+      "criterion": "",
+      "status": "pass | fail | not-applicable",
+      "evidence": "",
+      "notes": ""
+    }
+  ],
+  "patternCompliance": [
+    {
+      "patternName": "",
+      "sourceFile": "code-patterns.md | testing-patterns.md | architecture.md | ui-patterns.md",
+      "status": "compliant | deviation | violation",
+      "filesChecked": [],
+      "notes": ""
+    }
+  ],
+  "testVerification": {
+    "testsReRun": [],
+    "allPassed": true,
+    "failures": []
+  },
+  "findings": [
+    {
+      "checkId": "TR-001",
+      "severity": "error | warning",
+      "category": "acceptance | pattern | test | architecture | quality",
+      "description": "",
+      "file": "",
+      "location": "",
+      "suggestion": ""
+    }
+  ],
+  "verdict": "pass | pass-with-warnings | needs-fixes",
+  "reviewerAction": "none | resume-with-feedback | dispatched-fresh",
+  "feedbackSummary": ""
+}

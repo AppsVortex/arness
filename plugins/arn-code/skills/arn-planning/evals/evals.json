@@ -1,0 +1,182 @@
+{
+  "skill_name": "arn-planning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "planning: fix typo in README.md",
+      "expected_output": "Scope router classifies this as swift tier (score 0). Pure documentation change with zero risk across all dimensions.",
+      "expectations": [
+        "The scope router recommends the swift tier",
+        "The weighted total score is between 0 and 4",
+        "File count criterion is rated low",
+        "Domain sensitivity criterion is rated low",
+        "Reversibility risk criterion is rated low",
+        "The user is presented with a tier selection gate via AskUserQuestion"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "planning: update button color on settings page",
+      "expected_output": "Scope router classifies this as swift tier (score 0). Cosmetic UI change with no behavioral impact.",
+      "expectations": [
+        "The scope router recommends the swift tier",
+        "The weighted total score is between 0 and 4",
+        "Domain sensitivity criterion is rated low because the change is cosmetic",
+        "Architectural change criterion is rated low"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "planning: update CSS class names across all 15 component files to match new design system naming convention",
+      "expected_output": "Scope router classifies this as swift tier (score ~2) despite high file count. Severity-weighted scoring prevents false escalation for high-volume low-risk changes.",
+      "expectations": [
+        "The scope router recommends the swift tier",
+        "File count criterion is rated high due to 15 files",
+        "Domain sensitivity criterion is rated low because the change is cosmetic CSS renaming",
+        "Reversibility risk criterion is rated low because renaming is easily reversible",
+        "The weighted total score does not exceed 4 despite high file count"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "planning: add a formatCurrency helper to the utils module",
+      "expected_output": "Scope router classifies this as swift tier (score ~1). New additive function in an existing module with minimal test work.",
+      "expectations": [
+        "The scope router recommends the swift tier",
+        "The weighted total score is between 0 and 4",
+        "Domain sensitivity criterion is rated low because it is a utility function",
+        "Architectural change criterion is rated low because it follows existing patterns"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "planning: add validation to user registration form",
+      "expected_output": "Scope router classifies this as standard tier (score ~6). Business logic validation with behavioral change pushes into standard despite low file count.",
+      "expectations": [
+        "The scope router recommends the standard tier",
+        "The weighted total score is between 5 and 12",
+        "Domain sensitivity criterion is rated medium due to business logic",
+        "Reversibility risk criterion is rated medium due to behavioral change",
+        "The user is presented with a tier selection gate with Standard as the recommended option"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "planning: add rate limiting to /api/users endpoint",
+      "expected_output": "Scope router classifies this as standard tier (score ~7). Middleware extension with API behavioral change.",
+      "expectations": [
+        "The scope router recommends the standard tier",
+        "The weighted total score is between 5 and 12",
+        "Domain sensitivity criterion is rated medium due to API behavior impact",
+        "Architectural change criterion is rated medium due to middleware extension"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "planning: update Stripe webhook handler for new event types",
+      "expected_output": "Scope router classifies this as standard tier (score ~9). Payment domain sensitivity dominates despite low file count. Override rule forces minimum standard.",
+      "expectations": [
+        "The scope router recommends the standard tier",
+        "Domain sensitivity criterion is rated high due to payments/Stripe domain",
+        "The weighted total score is between 5 and 12",
+        "An override rule is triggered because domain sensitivity is high with weight >= 2",
+        "File count criterion is rated low despite being only 2-3 files"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "planning: add caching layer to database queries",
+      "expected_output": "Scope router classifies this as standard tier (score ~10). Moderate scores across all criteria for a well-understood pattern extension.",
+      "expectations": [
+        "The scope router recommends the standard tier",
+        "The weighted total score is between 5 and 12",
+        "Domain sensitivity criterion is rated medium due to data layer involvement",
+        "Architectural change criterion is rated medium due to cache layer addition"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "planning: redesign authentication to support OAuth2",
+      "expected_output": "Scope router classifies this as thorough tier (score 20). Maximum score with all criteria at highest level.",
+      "expectations": [
+        "The scope router recommends the thorough tier",
+        "The weighted total score is 13 or higher",
+        "Domain sensitivity criterion is rated high due to authentication domain",
+        "Architectural change criterion is rated high due to new auth pattern",
+        "Reversibility risk criterion is rated high due to breaking auth change",
+        "The user is presented with a tier selection gate with Thorough as the recommended option"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "planning: migrate user table schema with data backfill",
+      "expected_output": "Scope router classifies this as thorough tier (score ~15). Data migration with PII sensitivity and irreversible data mutation.",
+      "expectations": [
+        "The scope router recommends the thorough tier",
+        "The weighted total score is 13 or higher",
+        "Domain sensitivity criterion is rated high due to data migration and PII",
+        "Reversibility risk criterion is rated high due to data mutation"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "planning: implement RBAC permission system",
+      "expected_output": "Scope router classifies this as thorough tier (score 20). System-wide permission change with all criteria at high level.",
+      "expectations": [
+        "The scope router recommends the thorough tier",
+        "The weighted total score is 13 or higher",
+        "Domain sensitivity criterion is rated high due to auth/permissions domain",
+        "Architectural change criterion is rated high due to new permission pattern",
+        "Cross-module impact criterion is rated high due to system-wide effect"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "planning: fix the password hashing algorithm -- current implementation uses MD5",
+      "expected_output": "Scope router classifies this as thorough tier (score ~11, upgraded via Rule 3). Only 1-2 files but crypto domain sensitivity (weight 3) and data rehash reversibility (weight 2) both score high — 2 high-weight criteria trigger Rule 3 forcing minimum thorough. Changing a password hashing algorithm requires dual-hash migration strategy.",
+      "expectations": [
+        "The scope router recommends the thorough tier",
+        "Domain sensitivity criterion is rated high due to auth/crypto domain",
+        "Reversibility risk criterion is rated high due to data mutation from rehashing",
+        "File count criterion is rated low because only 1-2 files are affected",
+        "Rule 3 forces minimum thorough because 2 criteria with weight >= 2 score high (domain sensitivity and reversibility)"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "planning: rename the utils module to shared across the entire codebase",
+      "expected_output": "Scope router classifies this as swift tier (score ~4). Despite 20+ files and high cross-module impact, all high-weight criteria score zero because the change is a mechanical rename.",
+      "expectations": [
+        "The scope router recommends the swift tier",
+        "File count criterion is rated high due to 20+ files",
+        "Cross-module impact criterion is rated high",
+        "Domain sensitivity criterion is rated low because it is only a rename",
+        "Reversibility risk criterion is rated low because renaming is reversible",
+        "Architectural change criterion is rated low because no new patterns are introduced",
+        "The weighted total score does not exceed 4"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "planning: add WebSocket support for real-time notifications with pub/sub channels",
+      "expected_output": "Scope router classifies this as thorough tier (score ~13, borderline). New architectural pattern and new test infrastructure push this over the standard/thorough boundary.",
+      "expectations": [
+        "The scope router recommends the thorough tier",
+        "Architectural change criterion is rated high due to new WebSocket pattern",
+        "Test infrastructure criterion is rated high due to WebSocket test infrastructure needs",
+        "The weighted total score is at or above the standard/thorough boundary"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "planning: add error toast notification component to the dashboard",
+      "expected_output": "Scope router classifies this as swift or borderline swift/standard (score ~4). Low file count and mostly additive change, with minor architectural extension.",
+      "expectations": [
+        "The scope router recommends the swift tier or notes borderline swift/standard",
+        "Architectural change criterion is rated medium due to new component pattern",
+        "Domain sensitivity criterion is rated low because it is a UI component",
+        "The weighted total score is around the swift/standard boundary"
+      ]
+    }
+  ]
+}

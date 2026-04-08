@@ -1,0 +1,64 @@
+{
+  "reportType": "infra-review",
+  "projectName": "",
+  "reviewDate": "",
+  "reportVersion": 1,
+  "summary": {
+    "totalChecks": 0,
+    "errors": 0,
+    "warnings": 0,
+    "info": 0,
+    "environmentsReviewed": 0,
+    "resourcesReviewed": 0
+  },
+  "securityPosture": {
+    "before": "",
+    "after": "",
+    "delta": "",
+    "findings": []
+  },
+  "costCompliance": {
+    "estimatedCost": "",
+    "actualCost": "",
+    "budgetThreshold": "",
+    "delta": "",
+    "findings": []
+  },
+  "blastRadiusCompliance": {
+    "planned": "",
+    "actual": "",
+    "findings": []
+  },
+  "rollbackDocumentation": {
+    "status": "complete | incomplete | missing",
+    "findings": []
+  },
+  "environmentParity": {
+    "status": "consistent | drift-detected",
+    "environments": [],
+    "findings": []
+  },
+  "stateConsistency": {
+    "status": "clean | drift | orphaned-resources",
+    "findings": []
+  },
+  "resourceTagging": {
+    "status": "compliant | non-compliant",
+    "findings": []
+  },
+  "findings": [
+    {
+      "checkId": "",
+      "severity": "critical | high | medium | low",
+      "category": "security | cost | blast-radius | rollback | environment | state | tagging",
+      "description": "",
+      "resource": "",
+      "suggestion": "",
+      "remediated": false,
+      "remediationAction": ""
+    }
+  ],
+  "verdict": "pass | warn | needs-fixes",
+  "recommendation": "",
+  "nextStep": ""
+}

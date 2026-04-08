@@ -1,0 +1,36 @@
+{
+  "reportType": "infra-progress",
+  "projectName": "",
+  "lastUpdated": "",
+  "overallStatus": "not_started | in_progress | completed",
+  "totalPhases": 0,
+  "changeSpec": "",
+  "changePlan": "",
+  "phases": [
+    {
+      "phaseNumber": 1,
+      "phaseTitle": "",
+      "planFile": "plans/PHASE_1_PLAN.md",
+      "environment": "",
+      "blastRadius": "none | contained | broad | critical",
+      "execution": {
+        "status": "not_started | in_progress | completed | failed | rolled_back",
+        "reportFile": "reports/INFRA_CHANGE_REPORT_PHASE_1.json"
+      },
+      "securityGate": {
+        "status": "not_started | passed | blocked | acknowledged"
+      },
+      "costGate": {
+        "status": "not_started | passed | exceeded | acknowledged"
+      },
+      "verification": {
+        "status": "not_started | passed | failed | skipped"
+      },
+      "review": {
+        "verdict": "",
+        "reportFile": ""
+      }
+    }
+  ],
+  "notes": []
+}

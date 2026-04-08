@@ -1,0 +1,29 @@
+{
+  "recordType": "change-record",
+  "version": 1,
+  "ceremonyTier": "swift | standard | thorough",
+  "projectName": "",
+  "changePath": "",
+  "timestamp": "",
+  "tierSelection": {
+    "recommended": "",
+    "selected": "",
+    "overrideReason": null
+  },
+  "specRef": "",
+  "planRef": "",
+  "reportRef": "",
+  "filesModified": [],
+  "filesCreated": [],
+  "commitHash": "",
+  "commitMessage": "",
+  "review": {
+    "verdict": "pass | pass-with-warnings | needs-fixes",
+    "findingCount": {
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "sketchRef": "",
+  "nextSteps": []
+}

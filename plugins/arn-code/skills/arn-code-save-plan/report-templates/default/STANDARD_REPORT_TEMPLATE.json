@@ -1,0 +1,82 @@
+{
+  "reportType": "standard",
+  "ceremonyTier": "standard",
+  "projectName": "",
+  "changeTitle": "",
+  "changePath": "",
+  "reportDate": "",
+  "reportVersion": 1,
+  "summary": "",
+  "specLite": {
+    "problemStatement": "",
+    "requirements": [],
+    "architecturalNotes": ""
+  },
+  "tierSelection": {
+    "recommended": "",
+    "selected": "",
+    "overrideReason": null
+  },
+  "architectAssessment": {
+    "filesIdentified": [],
+    "patternsApplicable": [],
+    "concerns": [],
+    "uiInvolved": false,
+    "securityInvolved": false
+  },
+  "implementation": {
+    "filesCreated": [],
+    "filesModified": [],
+    "patternsFollowed": [
+      {
+        "patternName": "",
+        "applied": true,
+        "notes": ""
+      }
+    ]
+  },
+  "testing": {
+    "testsUpdated": [],
+    "testsAdded": [],
+    "testsRun": 0,
+    "testsPassed": 0,
+    "testsFailed": 0,
+    "failureDetails": []
+  },
+  "review": {
+    "verdict": "pass | pass-with-warnings | needs-fixes",
+    "patternFindings": [
+      {
+        "checkId": "",
+        "severity": "warning | error",
+        "description": "",
+        "file": ""
+      }
+    ],
+    "testFindings": [
+      {
+        "checkId": "",
+        "severity": "error",
+        "description": "",
+        "test": ""
+      }
+    ],
+    "architectConcernsResolved": [
+      {
+        "concern": "",
+        "resolved": true,
+        "resolution": ""
+      }
+    ],
+    "specLiteAlignment": [
+      {
+        "requirement": "",
+        "satisfied": true,
+        "notes": ""
+      }
+    ]
+  },
+  "changeRecordRef": "",
+  "warnings": [],
+  "nextSteps": []
+}

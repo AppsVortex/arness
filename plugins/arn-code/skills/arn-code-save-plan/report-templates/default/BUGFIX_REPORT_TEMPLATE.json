@@ -1,0 +1,99 @@
+{
+  "reportType": "bugfix",
+  "projectName": "",
+  "bugTitle": "",
+  "reportDate": "",
+  "reportVersion": 1,
+  "bugDescription": {
+    "symptom": "",
+    "severity": "",
+    "affectedArea": "",
+    "reproduction": ""
+  },
+  "rootCause": {
+    "description": "",
+    "evidence": [
+      {
+        "file": "",
+        "line": 0,
+        "finding": ""
+      }
+    ],
+    "howIntroduced": ""
+  },
+  "fixAttempts": [
+    {
+      "attemptNumber": 1,
+      "description": "",
+      "filesChanged": [
+        {
+          "file": "",
+          "action": "",
+          "description": ""
+        }
+      ],
+      "outcome": "",
+      "testResults": {
+        "totalTests": 0,
+        "passing": 0,
+        "failing": 0,
+        "details": ""
+      }
+    }
+  ],
+  "finalFix": {
+    "description": "",
+    "filesChanged": [
+      {
+        "file": "",
+        "action": "created | modified | deleted",
+        "description": ""
+      }
+    ],
+    "patternsFollowed": [
+      {
+        "patternName": "",
+        "referenceFile": "",
+        "notes": ""
+      }
+    ]
+  },
+  "testChanges": {
+    "testsFixed": [
+      {
+        "testFile": "",
+        "oldAssertion": "",
+        "newAssertion": "",
+        "reason": ""
+      }
+    ],
+    "testsAdded": [
+      {
+        "testFile": "",
+        "testName": "",
+        "covers": "",
+        "whyMissing": ""
+      }
+    ],
+    "testsVerified": [
+      {
+        "testFile": "",
+        "status": "pass | fail",
+        "notes": ""
+      }
+    ]
+  },
+  "finalTestResults": {
+    "totalTests": 0,
+    "passing": 0,
+    "failing": 0,
+    "skipped": 0,
+    "passRate": "",
+    "suiteCommand": ""
+  },
+  "status": "fixed | partially_fixed | needs_investigation",
+  "lessonsLearned": "",
+  "relatedIssues": [],
+  "recommendation": "",
+  "nextStep": ""
+}

@@ -1,0 +1,76 @@
+{
+  "reportType": "review",
+  "projectName": "",
+  "reviewDate": "",
+  "reportVersion": 1,
+  "summary": {
+    "totalChecks": 0,
+    "errors": 0,
+    "warnings": 0,
+    "info": 0,
+    "phasesReviewed": 0,
+    "tasksReviewed": 0
+  },
+  "structuralChecks": {
+    "status": "pass | fail",
+    "findings": []
+  },
+  "documentQuality": {
+    "introductionMd": {
+      "status": "pass | fail",
+      "findings": []
+    },
+    "phasePlans": [
+      {
+        "phase": 1,
+        "status": "pass | fail",
+        "findings": []
+      }
+    ]
+  },
+  "taskConsistency": {
+    "status": "pass | fail",
+    "dependencyGraph": "valid | invalid",
+    "findings": []
+  },
+  "patternCompliance": {
+    "patternsChecked": 0,
+    "findings": []
+  },
+  "codebaseVerification": {
+    "pathsChecked": 0,
+    "pathsValid": 0,
+    "findings": []
+  },
+  "contentQuality": {
+    "findings": []
+  },
+  "findings": [
+    {
+      "checkId": "S001",
+      "severity": "error | warning | info",
+      "category": "",
+      "description": "",
+      "file": "",
+      "location": "",
+      "suggestion": "",
+      "remediated": false,
+      "remediationAction": ""
+    }
+  ],
+  "remediation": {
+    "performed": false,
+    "totalFixed": 0,
+    "totalSkipped": 0,
+    "actions": [
+      {
+        "checkId": "S001",
+        "action": "fixed | skipped",
+        "fileModified": "",
+        "description": ""
+      }
+    ]
+  },
+  "recommendation": "ready | fix_errors | needs_review",
+  "nextStep": "arness-taskify | fix errors first"
+}

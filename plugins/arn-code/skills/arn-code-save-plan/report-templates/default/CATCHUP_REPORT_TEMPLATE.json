@@ -1,0 +1,45 @@
+{
+  "recordType": "change-record",
+  "version": 1,
+  "ceremonyTier": "catchup",
+  "projectName": "",
+  "changePath": "",
+  "timestamp": "",
+  "tierSelection": {
+    "recommended": "catchup",
+    "selected": "catchup",
+    "overrideReason": null
+  },
+  "specRef": "",
+  "planRef": "",
+  "reportRef": "",
+  "filesModified": [],
+  "filesCreated": [],
+  "commitHash": "",
+  "commitMessage": "",
+  "review": {
+    "verdict": "not-applicable",
+    "findingCount": {
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "sketchRef": "",
+  "nextSteps": [],
+  "catchup": {
+    "scanRange": {
+      "start": "",
+      "end": "",
+      "method": ""
+    },
+    "coveredCommits": [],
+    "confidence": "low",
+    "gaps": [],
+    "whatWeKnow": "",
+    "whatWeDontKnow": "",
+    "groupingTheme": null,
+    "boundaryMarker": false,
+    "preArnessCommitCount": null,
+    "boundaryCommitHash": null
+  }
+}

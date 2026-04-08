@@ -1,0 +1,90 @@
+{
+  "skill_name": "arn-code-standard",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "standard: add rate limiting middleware to the API",
+      "expected_output": "Standard tier produces spec-lite, plan, execution report, and change record in STANDARD_rate-limiting/ directory.",
+      "expectations": [
+        "A spec-lite section is generated containing a problem statement",
+        "A spec-lite section is generated containing requirements",
+        "A plan file named STANDARD_rate-limiting.md or similar STANDARD_<name>.md is created in the plans directory",
+        "A STANDARD_REPORT.json file is created with reportType set to standard",
+        "A CHANGE_RECORD.json envelope is generated with tier set to standard",
+        "The plan file contains numbered tasks for execution"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "standard: add form validation to the user registration page",
+      "expected_output": "Standard tier generates all three artifacts with correct structure and content.",
+      "expectations": [
+        "A STANDARD_<name>.md plan file is created in the plans directory",
+        "The plan file includes a spec-lite section with problem statement and requirements",
+        "A STANDARD_REPORT.json is created with correct structure including implementedFeatures",
+        "A CHANGE_RECORD.json is created with tier field set to standard",
+        "Pattern documentation is loaded and referenced during spec-lite generation"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "standard: add caching layer to database queries for improved performance",
+      "expected_output": "Standard tier handles a medium-complexity data layer change with appropriate ceremony.",
+      "expectations": [
+        "The spec-lite section identifies architectural considerations for the caching layer",
+        "A STANDARD_<name>.md plan is written with tasks covering cache implementation",
+        "A STANDARD_REPORT.json is generated after execution",
+        "A CHANGE_RECORD.json envelope is generated with tier set to standard",
+        "A review-lite verdict is present in the output"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "standard: update Stripe webhook handler to support new event types",
+      "expected_output": "Standard tier correctly handles a payment-domain change with spec-lite, plan, and all artifacts.",
+      "expectations": [
+        "The spec-lite section identifies the payment domain sensitivity",
+        "A STANDARD_<name>.md plan file is created",
+        "A STANDARD_REPORT.json is created with reportType set to standard",
+        "A CHANGE_RECORD.json is created with tier set to standard",
+        "The review-lite checks for payment-related concerns"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "standard: add error toast notification component to the dashboard",
+      "expected_output": "Standard tier produces all required artifacts for a UI component addition.",
+      "expectations": [
+        "A spec-lite section is generated with problem statement and requirements for the toast component",
+        "A STANDARD_<name>.md plan file is created in the plans directory",
+        "A STANDARD_REPORT.json is created with correct reportType",
+        "A CHANGE_RECORD.json envelope is generated with tier set to standard",
+        "All three artifact files are located in the same STANDARD_<name>/ subdirectory under the plans directory"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "standard: refactor the user service to use repository pattern",
+      "expected_output": "Standard tier handles an architectural refactoring with appropriate spec-lite analysis.",
+      "expectations": [
+        "The spec-lite section identifies the repository pattern as an architectural change",
+        "A STANDARD_<name>.md plan is generated with structured tasks",
+        "A STANDARD_REPORT.json is created after execution completes",
+        "A CHANGE_RECORD.json is created with tier set to standard",
+        "The plan references existing code patterns from pattern documentation"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "standard mode: add pagination to the product listing API endpoint",
+      "expected_output": "Standard tier handles an API enhancement with all required artifacts and review.",
+      "expectations": [
+        "The skill triggers correctly from the standard mode prompt",
+        "A spec-lite section is generated covering pagination requirements",
+        "A STANDARD_<name>.md plan file is created",
+        "A STANDARD_REPORT.json and CHANGE_RECORD.json are both generated",
+        "A review-lite step is performed before producing the change record"
+      ]
+    }
+  ]
+}

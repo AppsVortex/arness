@@ -1,0 +1,47 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "arn-marketplace",
+  "owner": {
+    "name": "AppsVortex"
+  },
+  "author": {
+    "name": "Fryderyk Benigni",
+    "url": "https://github.com/fredcallagan"
+  },
+  "license": "MIT",
+  "plugins": [
+    {
+      "name": "arn-code",
+      "source": "./plugins/arn-code",
+      "description": "Core development pipeline for Claude Code — plan, implement, ship, review, and assess features with AI-assisted workflows. Progressive zero-config init with user profiling and expertise-aware recommendations. Three ceremony tiers (swift/standard/thorough) with severity-aware scope routing. Five entry points: arn-planning, arn-implementing, arn-shipping, arn-reviewing-pr, arn-assessing. Includes arn-code-sketch for UI preview, arn-code-swift for quick implementations, arn-code-standard for medium-complexity changes, and arn-code-catch-up for retroactive documentation.",
+      "version": "3.2.0",
+      "author": {
+        "name": "Fryderyk Benigni",
+        "url": "https://github.com/fredcallagan"
+      },
+      "category": "development"
+    },
+    {
+      "name": "arn-spark",
+      "source": "./plugins/arn-spark",
+      "description": "Greenfield project exploration — product discovery with AI-assisted persona generation and competitive landscape research, brand naming through structured 4-step methodology with domain and trademark screening, architecture vision, use case authoring, project scaffolding, visual style exploration, static and interactive prototype validation, prototype preservation, feature extraction, visual testing strategy, stress testing suite, concept review, and issue tracker integration. Progressive zero-config init with user profiling and expertise-aware recommendations. Can operate standalone or alongside the arn-code core plugin.",
+      "version": "2.2.0",
+      "author": {
+        "name": "Fryderyk Benigni",
+        "url": "https://github.com/fredcallagan"
+      },
+      "category": "development"
+    },
+    {
+      "name": "arn-infra",
+      "source": "./plugins/arn-infra",
+      "description": "Infrastructure and deployment — containerization, IaC generation, deployment, CI/CD pipelines, environment management, secrets, monitoring, migration, and structured change management. Progressive zero-config init with user profiling and expertise-aware recommendations. Can operate standalone or alongside the arn-code core plugin.",
+      "version": "2.2.0",
+      "author": {
+        "name": "Fryderyk Benigni",
+        "url": "https://github.com/fredcallagan"
+      },
+      "category": "infrastructure"
+    }
+  ]
+}

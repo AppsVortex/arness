@@ -1,0 +1,32 @@
+{
+  "reportType": "progress",
+  "projectName": "",
+  "lastUpdated": "",
+  "overallStatus": "not_started | in_progress | completed",
+  "totalPhases": 0,
+  "phases": [
+    {
+      "phaseNumber": 1,
+      "phaseTitle": "",
+      "planFile": "plans/PHASE_1_PLAN.md",
+      "implementation": {
+        "status": "not_started | in_progress | completed | skipped",
+        "taskId": null,
+        "completedAt": "",
+        "reportFile": "reports/IMPLEMENTATION_REPORT_PHASE_1.json"
+      },
+      "testing": {
+        "status": "not_started | in_progress | completed | skipped | none",
+        "taskId": null,
+        "completedAt": "",
+        "reportFile": "reports/TESTING_REPORT_PHASE_1.json"
+      },
+      "review": {
+        "verdict": "",
+        "reviewCycles": 0,
+        "reportFile": "reports/TASK_REVIEW_TASK_1.json"
+      }
+    }
+  ],
+  "notes": []
+}

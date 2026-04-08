@@ -1,0 +1,52 @@
+{
+  "reportType": "implementation",
+  "projectName": "",
+  "phaseNumber": 0,
+  "planFile": "plans/PHASE_N_PLAN.md",
+  "reportDate": "",
+  "reportVersion": 1,
+  "summary": "",
+  "patternsFollowed": [
+    {
+      "patternName": "",
+      "referenceFile": "",
+      "applied": true,
+      "notes": ""
+    }
+  ],
+  "implementedFeatures": [
+    {
+      "featureId": "",
+      "featureName": "",
+      "description": "",
+      "status": "completed | in_progress | blocked",
+      "filesCreated": [],
+      "filesModified": [],
+      "patternUsed": "",
+      "notes": ""
+    }
+  ],
+  "updatedFeatures": [
+    {
+      "featureId": "",
+      "featureName": "",
+      "changeDescription": "",
+      "filesModified": [],
+      "reason": "",
+      "notes": ""
+    }
+  ],
+  "pendingItems": [],
+  "blockers": [],
+  "nextSteps": [],
+  "additionalNotes": "",
+  "reviewFindings": [
+    {
+      "checkId": "",
+      "severity": "warning",
+      "description": "",
+      "file": "",
+      "suggestion": ""
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "arn-code",
+  "version": "3.2.0",
+  "repository": "https://github.com/AppsVortex/arness",
+  "author": {
+    "name": "Fryderyk Benigni",
+    "url": "https://github.com/fredcallagan"
+  },
+  "description": "Development toolkit for Claude Code — plan, implement, ship, review, and assess features with AI-assisted workflows. Progressive zero-config init: auto-configures with sensible defaults on first skill invocation, no upfront ceremony required. Three-tier ceremony model: swift (lightweight), standard (mid-ceremony spec-plan-execute), and thorough (full pipeline) with severity-aware scope routing. Five entry points: arn-planning (scope router, spec, plan), arn-implementing (execute plans, swift, or standard changes), arn-shipping (commit, push, PR), arn-reviewing-pr (PR feedback), arn-assessing (codebase health). Includes arn-code-sketch for UI preview, arn-code-swift for quick implementations, and arn-code-standard for mid-ceremony changes. Includes arn-code-catch-up for retroactive documentation of out-of-pipeline commits. Pipeline preference persistence for streamlined repeat sessions. Batch pipeline: arn-code-batch-planning (multi-feature planning), arn-code-batch-implement (parallel worktree execution), arn-code-batch-merge (conflict-aware merge), arn-code-batch-simplify (cross-feature quality)."
+}

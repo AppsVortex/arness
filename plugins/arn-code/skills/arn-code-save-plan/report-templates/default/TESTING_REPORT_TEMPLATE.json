@@ -1,0 +1,71 @@
+{
+  "reportType": "testing",
+  "projectName": "",
+  "phaseNumber": 0,
+  "planFile": "plans/PHASE_N_PLAN.md",
+  "reportDate": "",
+  "reportVersion": 1,
+  "summary": "",
+  "testEnvironment": {
+    "framework": "",
+    "configuration": ""
+  },
+  "testSummary": {
+    "totalTests": 0,
+    "passing": 0,
+    "failing": 0,
+    "skipped": 0,
+    "passRate": "0%"
+  },
+  "patternsFollowed": [
+    {
+      "patternName": "",
+      "referenceFile": "",
+      "applied": true,
+      "notes": ""
+    }
+  ],
+  "testCases": [
+    {
+      "testId": "",
+      "testName": "",
+      "description": "",
+      "type": "unit | integration",
+      "status": "pass | fail | skipped",
+      "filePath": "",
+      "markers": [],
+      "errorMessage": "",
+      "notes": ""
+    }
+  ],
+  "failingTests": [
+    {
+      "testId": "",
+      "testName": "",
+      "errorMessage": "",
+      "possibleCause": "",
+      "suggestedFix": "",
+      "fixApplied": false,
+      "fixDescription": ""
+    }
+  ],
+  "bugsFixed": [
+    {
+      "bugId": "",
+      "description": "",
+      "rootCause": "",
+      "fixDescription": "",
+      "filesModified": [],
+      "testsReRun": true,
+      "allPassingAfterFix": true
+    }
+  ],
+  "coverage": {
+    "statements": "",
+    "branches": "",
+    "functions": "",
+    "lines": ""
+  },
+  "nextSteps": [],
+  "additionalNotes": ""
+}

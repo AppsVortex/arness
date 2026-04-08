@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# UV
+.uv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node.js (for MCP servers)
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Claude Code local settings (machine-specific only — .claude/settings.json is committable for team sharing)
+.claude/settings.local.json
+.claude/*.local.md
+
+# Temporary porting folder
+porting_temp/
+
+# Arness project-specific data (plans, specs, patterns, templates)
+.arness/
+.claude_plans/

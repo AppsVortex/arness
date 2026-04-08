@@ -1,0 +1,77 @@
+{
+  "reportType": "simplification",
+  "projectName": "",
+  "scopeContext": "pipeline | swift | bugfix | task",
+  "reportDate": "",
+  "reportVersion": 1,
+  "configuration": {
+    "filesReviewed": 0,
+    "batchCount": 0,
+    "reviewAxes": [],
+    "patternDocsLoaded": []
+  },
+  "findings": [
+    {
+      "findingId": "SIM-001",
+      "axis": "reuse | quality | efficiency",
+      "severity": "low | medium | high",
+      "effort": "trivial | small | medium | large",
+      "title": "",
+      "description": "",
+      "affectedFiles": [],
+      "suggestedFix": "",
+      "patternReference": "",
+      "status": "pending | approved | rejected | applied | reverted | deferred"
+    }
+  ],
+  "patternsPreserved": [
+    {
+      "description": "",
+      "patternName": "",
+      "patternFile": "",
+      "reviewerAxis": ""
+    }
+  ],
+  "applicationResults": [
+    {
+      "findingId": "",
+      "filesModified": [],
+      "testCommand": "",
+      "testResult": "",
+      "selfHealAttempts": 0,
+      "reverted": false,
+      "revertReason": ""
+    }
+  ],
+  "testVerification": {
+    "totalRun": 0,
+    "totalPassed": 0,
+    "totalFailed": 0,
+    "revertedFindings": []
+  },
+  "summary": {
+    "totalFindings": 0,
+    "approved": 0,
+    "rejected": 0,
+    "applied": 0,
+    "reverted": 0,
+    "deferred": 0,
+    "patternsPreservedCount": 0
+  },
+  "reviewerStatus": {
+    "reuse": {
+      "status": "completed | failed | skipped",
+      "findingsCount": 0
+    },
+    "quality": {
+      "status": "completed | failed | skipped",
+      "findingsCount": 0
+    },
+    "efficiency": {
+      "status": "completed | failed | skipped",
+      "findingsCount": 0
+    }
+  },
+  "warnings": [],
+  "nextSteps": []
+}
