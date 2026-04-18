@@ -81,6 +81,8 @@ If file overlap detected between any features, show which features share files a
 
 Show estimated context: "[N] features will be implemented in parallel, each as an independent session."
 
+Inform the user about worktree location: "Workers run in pre-created worktrees at `.claude/worktrees/arn-batch-<slug>/` on branches `arn-batch/<slug>`. Worktrees are preserved until the corresponding PR is merged; `arn-code-batch-merge` cleans them up after each successful merge."
+
 ### Step 3: Launch Confirmation
 
 Ask (using `AskUserQuestion`):
@@ -94,26 +96,59 @@ Ask (using `AskUserQuestion`):
 - **Select subset** -- present a multi-select (using `AskUserQuestion` with `multiSelect: true`) listing all pending features by name. Proceed with selected features only.
 - **Cancel** -- exit.
 
-### Step 4: Spawn Workers
+### Step 4: Pre-create Worktrees and Spawn Workers
+
+The Agent tool's built-in `isolation: "worktree"` has known silent-failure modes (see upstream issues anthropics/claude-code#27881 and #39886) where concurrent spawns can skip worktree creation entirely and run agents directly in the main checkout. To eliminate this risk, the orchestrator pre-creates every worktree itself via `git worktree add`, then spawns agents **without** `isolation` and passes the absolute worktree path in the prompt.
 
 Read the worker instructions template from `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-batch-implement/references/worker-instructions.md`.
 
-For each feature to implement, spawn one Agent with:
-- `isolation: "worktree"`
-- `run_in_background: true`
+#### Step 4a: Compute Worktree Slugs
+
+For each selected feature, derive a slug from the feature name: lowercase, replace non-alphanumerics with `-`, collapse runs of `-`, trim leading/trailing `-`. Example: `Auth Service v2` → `auth-service-v2`.
+
+**Empty-slug fallback:** If sanitization produces an empty string (feature name was entirely non-alphanumeric, e.g., emojis or punctuation), substitute `feature-<index>` where `<index>` is the feature's 1-based position in the batch. This keeps provisioning deterministic instead of silently failing downstream.
+
+Capture the repo root once:
+
+```bash
+REPO="$(git rev-parse --show-toplevel)"
+```
+
+For each slug, resolve three possible collisions before provisioning — a path may already be taken, a branch may already exist from a prior run, and stale worktree metadata may block creation:
+
+1. **Path collision.** Check `git -C "$REPO" worktree list --porcelain` for an existing worktree at `$REPO/.claude/worktrees/arn-batch-<slug>`:
+   - None: path is free, proceed to the branch check.
+   - Exists on branch `arn-batch/<slug>` with clean status (`git -C "$REPO/.claude/worktrees/arn-batch-<slug>" status --porcelain` is empty): reuse it and mark this slug as "already provisioned" (skip Step 4b).
+   - Otherwise (dirty worktree, different branch, unknown state): append `-<n>` starting at `2` and re-check until the path is free.
+
+2. **Branch collision.** Once a path is free, check whether the target branch already exists: `git -C "$REPO" show-ref --verify --quiet "refs/heads/arn-batch/<slug>"`. If it does (common when a worktree was manually deleted but the branch wasn't cleaned up), `git worktree add -b` will fail. Keep incrementing `-<n>` on the slug until both path AND branch are free.
+
+#### Step 4b: Pre-create Worktrees Sequentially
+
+For each slug that needs creation (i.e., wasn't marked "already provisioned" in Step 4a), run:
+
+```bash
+git -C "$REPO" worktree add "$REPO/.claude/worktrees/arn-batch-<slug>" -b "arn-batch/<slug>"
+```
+
+Capture exit code and stderr per feature. Verify success by confirming the path appears in `git -C "$REPO" worktree list`. Split the feature list into:
+- `ready`: features with a valid worktree (newly created or reused).
+- `deferred`: features whose `git worktree add` failed. Store the stderr for the retry step.
+
+If **all** features land in `deferred`, report the errors and stop — something is broken globally (disk, permissions, corrupt `.git/worktrees/`). A retry loop cannot fix a systemic failure.
+
+#### Step 4c: Spawn Parallel Workers (ready set)
+
+For each feature in `ready`, spawn one Agent with:
+- **No** `isolation` parameter — worktrees already exist.
+- `run_in_background: true`.
 - A self-contained prompt built from the worker-instructions template, filled with:
-  - The feature's plan path (absolute)
-  - The detected tier (thorough, standard, or swift)
-  - The platform (`github`, `bitbucket`, or `none` — from `## Arness` config)
-  - Code patterns directory path (absolute)
-  - Template path (absolute)
-  - Sketch manifest path (absolute, if sketch exists; otherwise "none")
+  - `{worktree_path}`: the absolute path `$REPO/.claude/worktrees/arn-batch-<slug>`
+  - `{feature_name}`, `{plan_path}`, `{tier}`, `{platform}`, `{code_patterns_path}`, `{template_path}`, `{sketch_manifest_path}` as before.
 
-If a worker **fails to spawn** (Agent tool returns an error), report the failure, continue spawning remaining workers, and include the failed feature in the Step 5 summary with status "failed -- spawn error".
+**ALL agents in the ready set MUST be spawned in a SINGLE message** (multiple Agent tool calls in one response) so they run in parallel. Cap at **5 concurrent workers**. If `ready` has more than 5 entries, batch into groups of 5: launch group 1, wait for completion, launch group 2, etc.
 
-**ALL agents MUST be spawned in a SINGLE message** (multiple Agent tool calls in one response) so they run in parallel. Cap at **5 concurrent workers**.
-
-If more than 5 features are queued, batch into groups of 5. Launch the first group, wait for all workers in that group to complete, then launch the next group.
+If a worker's Agent call returns a spawn error, move that feature from `ready` to `deferred` with reason "spawn error: …". It will be retried sequentially in Step 6.
 
 ### Step 5: Track Progress
 
@@ -127,7 +162,7 @@ Present a status table as workers finish:
 | ...     | ...    | ...| ...      |
 ```
 
-Status values: "done", "failed -- <reason>"
+Status values: "done", "failed -- <reason>", "failed -- worktree provisioning (retry exhausted)" (set in Step 6 for features that couldn't get a worktree even after retry).
 
 If a worker fails: report the failure, continue tracking other workers, include the failed feature in the summary.
 
@@ -135,7 +170,24 @@ When all workers in the current batch complete, present the summary: **"[N/M] fe
 
 If there are additional batches (>5 features), launch the next batch and repeat.
 
-### Step 6: Handoff
+### Step 6: Retry Deferred Features (sequential)
+
+If the `deferred` set accumulated in Step 4 is empty, skip this step and go straight to handoff.
+
+Retry runs **after** the parallel workers from Step 4c finish, not alongside them — this avoids racing with live workers on `.git/worktrees/` metadata and keeps the orchestrator's output easy to read.
+
+For each feature in `deferred`, sequentially (one at a time, not in parallel):
+
+1. **Prune stale metadata:** `git -C "$REPO" worktree prune`. This clears entries for worktrees whose directories were removed but whose `.git/worktrees/` bookkeeping lingered — the single most common cause of transient `worktree add` failures.
+2. **Retry worktree creation:** re-run the Step 4b command. If the path or branch still collides, append `-retry` to the slug as a human-readable marker and try once more.
+3. **If creation succeeds:** spawn ONE foreground Agent (no `isolation`, no `run_in_background`) using the same worker-instructions prompt as Step 4c, with `{worktree_path}` set to the newly-created path. Wait for it to complete. Record its outcome in the Step 5 status table.
+4. **If creation still fails:** mark the feature as `failed -- worktree provisioning (retry exhausted)` in the status table and include the git error in the final summary.
+
+Do not retry more than once per feature. The goal is to recover from transient collisions and stale state, not to mask systemic failures.
+
+**Worked example.** Say the batch has three features: `auth-service`, `api-endpoints`, `settings-page`. Step 4b succeeds for the first two but `settings-page` fails because `.git/worktrees/arn-batch-settings-page/` holds stale metadata from a manually-deleted worktree. Step 4c spawns parallel workers for `auth-service` and `api-endpoints`; Step 5 tracks them to completion. Step 6 then: prunes the stale metadata, retries `git worktree add` for `settings-page` (now succeeds), spawns ONE foreground worker, waits, records "done" in the Step 5 table. Total outcome: 3/3 succeed — parallel workers were never blocked by the stuck feature.
+
+### Step 7: Handoff
 
 Ask (using `AskUserQuestion`):
 

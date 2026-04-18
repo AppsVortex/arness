@@ -153,7 +153,26 @@ Then update the local branch:
 git checkout main && git pull
 ```
 
-**If the merge fails** (CI checks, branch protection, conflicts): report the error: "Merge failed for [feature] (#PR): [error message]." Offer to skip and continue with another PR.
+**Clean up the feature's worktree (batch-implement worktrees only)**
+
+After the merge succeeds and `main` is up to date, remove the worktree and local branch created by `arn-code-batch-implement`. Only apply this cleanup when the merged PR's head branch starts with `arn-batch/` — other branches (manual work, hotfixes) are left alone.
+
+```bash
+HEAD_BRANCH="$(gh pr view <url> --json headRefName -q .headRefName)"   # or equivalent for bkt
+case "$HEAD_BRANCH" in
+  arn-batch/*)
+    SLUG="${HEAD_BRANCH#arn-batch/}"
+    REPO="$(git rev-parse --show-toplevel)"
+    WORKTREE_PATH="$REPO/.claude/worktrees/arn-batch-$SLUG"
+    git -C "$REPO" worktree remove --force "$WORKTREE_PATH" 2>/dev/null || true
+    git -C "$REPO" branch -D "$HEAD_BRANCH" 2>/dev/null || true
+    ;;
+esac
+```
+
+The `--force` flag is safe here: the branch's commits are already on `main`, so nothing is lost. Errors from both commands are ignored (the worktree or branch may have been cleaned up manually). Log the cleanup outcome alongside the PR URL in the merge summary: e.g. `✓ Merged #42 · worktree cleaned`.
+
+**If the merge fails** (CI checks, branch protection, conflicts): report the error: "Merge failed for [feature] (#PR): [error message]." Offer to skip and continue with another PR. Do NOT clean up the worktree — it still holds the only local copy of the work.
 
 If remaining open PRs > 0:
 - Re-run the `arn-code-batch-pr-analyzer` agent (foreground) with the updated PR list
@@ -188,6 +207,8 @@ Batch Merge Status: [N] merged, [M] still open
 | API endpoints | #43  | Merged  |
 | Settings page | #44  | Open    |
 ```
+
+**Unmerged worktree note:** Worktrees for unmerged features remain at `.claude/worktrees/arn-batch-<slug>/` on branches `arn-batch/<slug>`. They are preserved so the work is not lost. Once you decide what to do with each (rework, merge later, abandon), clean up manually with `git worktree remove <path>` and `git branch -D arn-batch/<slug>`, or re-run `arn-code-batch-merge` after resolving the blocker.
 
 ### Feature Tracker Update
 

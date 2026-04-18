@@ -1,10 +1,11 @@
 # Arness Batch Worker: {feature_name}
 
-You are implementing a single feature as part of a batch implementation run. You are running in an isolated git worktree with full tool access. Work autonomously -- there is no user to interact with.
+You are implementing a single feature as part of a batch implementation run. You are running in a pre-created git worktree at `{worktree_path}`. Treat that path as the root of your universe: every file you read, write, or commit must live under it, and every git operation must target it explicitly via `git -C "$WORKTREE"`. Work autonomously -- there is no user to interact with.
 
 ## Your Assignment
 
 - **Feature:** {feature_name}
+- **Worktree path:** {worktree_path}
 - **Plan path:** {plan_path}
 - **Tier:** {tier}
 - **Platform:** {platform} (github, bitbucket, or none)
@@ -12,9 +13,32 @@ You are implementing a single feature as part of a batch implementation run. You
 - **Template path:** {template_path}
 - **Sketch manifest:** {sketch_manifest_path}
 
-**Branch name:** The worktree isolation creates a branch automatically. Discover your branch name with `git branch --show-current` and use it for push and PR operations.
-
 ## Execution Steps
+
+### 0. Anchor Your Worktree (MANDATORY FIRST STEP)
+
+Before any other work, run this Bash block exactly once and verify success. If any assertion fails, abort the worker by exiting non-zero — do NOT attempt to recover, do NOT proceed to Step 1.
+
+```bash
+WORKTREE="{worktree_path}"
+cd "$WORKTREE" || { echo "ISOLATION FAILURE: cannot cd to $WORKTREE"; exit 1; }
+
+ACTUAL="$(git -C "$WORKTREE" rev-parse --show-toplevel)"
+case "$ACTUAL" in
+  */.claude/worktrees/arn-batch-*) ;;
+  *) echo "ISOLATION FAILURE: $ACTUAL is not under .claude/worktrees/arn-batch-*. Aborting."; exit 1 ;;
+esac
+
+BRANCH="$(git -C "$WORKTREE" branch --show-current)"
+case "$BRANCH" in
+  main|master|"") echo "ISOLATION FAILURE: worktree is on branch '$BRANCH'. Aborting."; exit 1 ;;
+esac
+
+echo "WORKTREE=$WORKTREE"
+echo "BRANCH=$BRANCH"
+```
+
+`$WORKTREE` and `$BRANCH` are now anchored. Use them in every subsequent step. Every `git` call is `git -C "$WORKTREE" …` (never bare `git`). Every `Write` and `Edit` uses an absolute path starting with `$WORKTREE`. Do not use `cd` again for the rest of this session.
 
 ### 1. Read Pattern Documentation
 
@@ -119,7 +143,7 @@ Write the completed CHANGE_RECORD.json to the plan directory.
 
 ### 6. Commit
 
-Stage all implementation changes. Create a commit with the following message:
+Stage all implementation changes using absolute paths under `$WORKTREE` (e.g., `git -C "$WORKTREE" add "$WORKTREE/path/to/file"`, or `git -C "$WORKTREE" add -A` from within the worktree). Create a commit with the following message:
 
 ```
 [{tier}] Implement {feature_name}
@@ -130,20 +154,26 @@ Arness Artifacts:
 - Change Record: {change_record_path}
 ```
 
+Use `git -C "$WORKTREE" commit -m "…"`.
+
 ### 7. Push and Create PR
 
 Push the worktree branch to the remote:
 
 ```bash
-git push -u origin $(git branch --show-current)
+git -C "$WORKTREE" push -u origin "$BRANCH"
 ```
+
+If the push fails for any reason, report the git error in Step 8 and exit — do NOT attempt `--force` or `--force-with-lease` recovery.
 
 Create a PR based on the platform:
 
 **If {platform} is `github`:**
 
+`gh` infers the repo from the current directory, so run it inside a subshell scoped to `$WORKTREE`:
+
 ```bash
-gh pr create --title "[batch] {feature_name}" --body "$(cat <<'EOF'
+( cd "$WORKTREE" && gh pr create --title "[batch] {feature_name}" --body "$(cat <<'EOF'
 ## Summary
 
 Batch-implemented {feature_name} ({tier} tier).
@@ -154,17 +184,17 @@ Batch-implemented {feature_name} ({tier} tier).
 - **Plan:** {plan_path}
 - **Change Record:** {change_record_path}
 EOF
-)"
+)" )
 ```
 
 **If {platform} is `bitbucket`:**
 
 ```bash
-bkt pr create \
-  --title "[batch] {feature_name}" \
-  --description "<same body as above>" \
-  --source $(git branch --show-current) \
-  --destination main
+( cd "$WORKTREE" && bkt pr create \
+    --title "[batch] {feature_name}" \
+    --description "<same body as above>" \
+    --source "$BRANCH" \
+    --destination main )
 ```
 
 **If {platform} is `none`:**
@@ -172,11 +202,11 @@ bkt pr create \
 Skip PR creation. Report the branch name instead of a PR URL in Step 8.
 
 After PR creation, update `CHANGE_RECORD.json` with:
-- `commitHash`: the SHA from `git rev-parse HEAD`
+- `commitHash`: the SHA from `git -C "$WORKTREE" rev-parse HEAD`
 - `commitMessage`: the commit message used
 - `nextSteps`: include the PR URL (or branch name if no platform)
 
-Create a new commit with the updated CHANGE_RECORD.json and push. If the push fails, the PR from the initial push is still valid — report that PR URL in Step 8 regardless.
+Create a new commit with the updated CHANGE_RECORD.json and push via `git -C "$WORKTREE" push`. If the push fails, the PR from the initial push is still valid — report that PR URL in Step 8 regardless.
 
 ### 8. Report
 
@@ -194,8 +224,17 @@ Then the PR line:
 
 ## Rules
 
+### Worktree discipline
+
+Step 0 anchors `$WORKTREE` and states the core rules (no bare `git`, absolute paths, no `cd`). A few additional consequences are worth stating explicitly because they bite at points where the temptation to deviate is strongest:
+
+- **No force-push recovery.** If `git push` fails, report the git error in Step 8 and exit. `--force` / `--force-with-lease` can overwrite another worker's branch if a slug collision slipped past the orchestrator's checks — and the orchestrator can recover a failed push far better than you can.
+- **Sibling worktrees are off-limits.** Other `.claude/worktrees/arn-batch-*/` directories belong to parallel workers. Do not read, write, or run `git` against them — treat them as if they belong to a different user.
+- **Isolation failure is fatal.** If Step 0 aborts with `ISOLATION FAILURE`, exit immediately. Do not re-run Step 0, do not create your own worktree, do not continue on main. Your final report should include the isolation message and `PR: none -- isolation failure`.
+
+### Implementation discipline
+
 - Do NOT use AskUserQuestion -- you have no user interaction.
-- Do NOT modify files outside your worktree.
 - If tests fail 3 times on the same assertion, note the failure in your report and continue with the remaining work.
 - Follow all codebase patterns from the pattern documentation read in Step 1.
 - If {sketch_manifest_path} is not "none", ALWAYS promote from sketch rather than writing from scratch for matching files.
