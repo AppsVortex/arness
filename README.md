@@ -2,6 +2,8 @@
 
 ![Arness](assets/arness.png)
 
+[![Docs](https://img.shields.io/badge/docs-arness.appsvortex.com-7e3ff2?logo=astro&logoColor=white)](https://arness.appsvortex.com/)
+
 > Arness — H not required.
 
 **Structured AI workflows for Claude Code. From first idea to production deploy.**
@@ -85,6 +87,7 @@ Then run the entry point that matches what you want to do — Arness auto-config
 
 ## Learn More
 
+- **[Documentation site](https://arness.appsvortex.com/)** — Full docs, searchable
 - **[Getting Started](docs/getting-started.md)** — Installation, first run, picking your path
 - **[Core Concepts](docs/concepts.md)** — Entry points, skills, agents, and how it all connects
 - **[Arness Spark](docs/plugins/arn-spark.md)** — Product discovery and prototyping

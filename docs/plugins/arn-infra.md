@@ -7,6 +7,8 @@ sidebar:
 
 ![Arness Infra](../../assets/infra.png)
 
+[![Docs](https://img.shields.io/badge/docs-arness.appsvortex.com-7e3ff2?logo=astro&logoColor=white)](https://arness.appsvortex.com/)
+
 Arness Infra aims to help with containerization, IaC generation, deployment, and monitoring. It audits your existing toolchain, generates infrastructure tailored to your stack, and provides a structured change management pipeline for complex infrastructure work.
 
 > **Experimental — use with care.** Infrastructure is high-stakes by nature. Arness Infra is functional and actively evolving, but it is the newest and least battle-tested of the three plugins. Always review generated configurations, IaC, and deployment commands before applying them to real environments. We strongly recommend testing in non-production environments first. Feedback is very welcome — [open an issue](https://github.com/AppsVortex/arness/issues) or contribute directly.

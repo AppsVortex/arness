@@ -7,6 +7,8 @@ sidebar:
 
 ![Arness Code](../../assets/code.png)
 
+[![Docs](https://img.shields.io/badge/docs-arness.appsvortex.com-7e3ff2?logo=astro&logoColor=white)](https://arness.appsvortex.com/)
+
 Arness Code is the development pipeline that treats AI-assisted coding like engineering, not guesswork. Every feature flows through spec, plan, structure, execute, review, and ship — producing a durable artifact at each step that feeds the next. The pipeline operates at three ceremony tiers — swift, standard, and thorough — that scale process to match scope. A one-file fix gets a lightweight pass. A cross-cutting refactor gets phases, task dependencies, parallel execution, and quality gates.
 
 ## Start Here — Five Entry Points
