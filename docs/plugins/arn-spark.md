@@ -7,6 +7,8 @@ sidebar:
 
 ![Arness Spark](../../assets/spark.png)
 
+[![Docs](https://img.shields.io/badge/docs-arness.appsvortex.com-7e3ff2?logo=astro&logoColor=white)](https://arness.appsvortex.com/)
+
 Spark is where ideas come alive. It is the ideation plugin that takes you from "I have an idea" to "I have a validated, feature-ready codebase." Most projects fail before the first line of code -- wrong problem, wrong audience, wrong architecture. Spark is the antidote: structured discovery, adversarial validation, and interactive prototyping before you commit to building.
 
 ## Start Here
