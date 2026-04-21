@@ -5,6 +5,10 @@ Greenfield exploration plugin for Claude Code. Takes a raw idea through product 
 ## Install
 
 ```
+# Add the Arness marketplace (one-time)
+/plugin marketplace add AppsVortex/arness
+
+# Install this plugin
 /plugin install arn-spark@arn-marketplace
 ```
 
