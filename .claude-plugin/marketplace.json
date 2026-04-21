@@ -1,14 +1,12 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "arn-marketplace",
   "owner": {
     "name": "AppsVortex"
   },
-  "author": {
-    "name": "Fryderyk Benigni",
-    "url": "https://github.com/fredcallagan"
+  "metadata": {
+    "description": "Three plugins for Claude Code — Spark (greenfield discovery), Code (development pipeline), Infra (infrastructure and deployment). Each stage produces durable Markdown/JSON artifacts the next consumes. MIT, local-only.",
+    "version": "1.0.0"
   },
-  "license": "MIT",
   "plugins": [
     {
       "name": "arn-code",
