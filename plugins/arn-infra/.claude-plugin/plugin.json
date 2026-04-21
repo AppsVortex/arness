@@ -6,5 +6,5 @@
     "name": "Fryderyk Benigni",
     "url": "https://github.com/fredcallagan"
   },
-  "description": "Infrastructure and deployment plugin for Arness with progressive zero-config init — auto-configures with sensible defaults on first skill invocation, no upfront ceremony required. 23 skills and 9 agents covering containerization, IaC generation, deployment, CI/CD pipelines, environment management, secrets, monitoring, migration, and structured change management pipeline. Can operate standalone or alongside the arn-code plugin."
+  "description": "Infrastructure and deployment for Claude Code — containerization, IaC generation (OpenTofu/Pulumi/CDK), CI/CD pipelines, environments, secrets, monitoring. 23 skills, 9 agents."
 }
