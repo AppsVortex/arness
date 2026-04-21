@@ -7,6 +7,10 @@ Infrastructure and deployment plugin for Claude Code. Audits your toolchain, gen
 ## Install
 
 ```
+# Add the Arness marketplace (one-time)
+/plugin marketplace add AppsVortex/arness
+
+# Install this plugin
 /plugin install arn-infra@arn-marketplace
 ```
 

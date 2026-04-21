@@ -5,6 +5,10 @@ Structured, artifact-driven development pipeline for Claude Code. Every feature 
 ## Install
 
 ```
+# Add the Arness marketplace (one-time)
+/plugin marketplace add AppsVortex/arness
+
+# Install this plugin
 /plugin install arn-code@arn-marketplace
 ```
 
