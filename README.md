@@ -109,6 +109,15 @@ Then run the entry point that matches what you want to do — Arness auto-config
 
 Created by [Fryderyk Benigni](https://github.com/fredcallagan) at [AppsVortex](https://github.com/AppsVortex).
 
+## Star History
+
+<a href="https://star-history.com/#AppsVortex/arness&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=AppsVortex/arness&type=Date&theme=dark" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=AppsVortex/arness&type=Date" />
+  </picture>
+</a>
+
 ## License
 
 MIT
