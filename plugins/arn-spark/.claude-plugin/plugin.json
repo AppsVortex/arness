@@ -1,6 +1,5 @@
 {
   "name": "arn-spark",
-  "version": "2.2.0",
   "repository": "https://github.com/AppsVortex/arness",
   "author": {
     "name": "Fryderyk Benigni",
