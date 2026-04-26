@@ -223,6 +223,8 @@ Ask (using `AskUserQuestion`):
 
 Construct the `## Arness` section with all fields. If CLAUDE.md does not exist, create it with the `## Arness` section. If CLAUDE.md exists, append the section at the end.
 
+For the `Linting:` field: this is a fast-path defaulted to `skip` here. The first time a code-generating skill runs (executor, ship, etc.) the user will be prompted by Layer 2c-style logic to confirm. Do not invoke the codebase-analyzer here — keep this fast path lightweight. Setting `skip` is safe because it means "no lint gate"; the user can opt in later.
+
 Fields to write:
 ```
 ## Arness
@@ -234,6 +236,7 @@ Fields to write:
 - **Template updates:** ask
 - **Code patterns:** .arness
 - **Docs directory:** .arness/docs
+- **Linting:** skip
 - **Git:** yes
 - **Platform:** github
 - **Issue tracker:** github
@@ -253,9 +256,9 @@ Read the plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` 
 
 ### 2c. If `## Arness` Exists But Arness Code Fields Are Missing
 
-Check for the presence of Arness Code fields: `Plans directory`, `Specs directory`, `Report templates`, `Template path`, `Code patterns`, `Docs directory`.
+Check for the presence of Arness Code fields: `Plans directory`, `Specs directory`, `Report templates`, `Template path`, `Code patterns`, `Docs directory`, `Linting`.
 
-If any are missing:
+If directory-style fields (`Plans directory`, `Specs directory`, `Report templates`, `Template path`, `Code patterns`, `Docs directory`) are missing:
 
 1. Check the `Folder preference` field in the existing `## Arness` section.
 2. If `Folder preference: defaults` — silently add missing Code fields with default values. Create directories via `mkdir -p`.
@@ -263,6 +266,25 @@ If any are missing:
 4. If no `Folder preference` field exists — add it with value `defaults` and silently add missing fields.
 5. **Preserve all existing fields** from other plugins (Spark fields, Infra fields) per the CLAUDE.md Config Section pattern.
 6. Copy templates if `.arness/templates/` is empty or missing (follow template-setup.md procedure).
+
+If the `Linting:` field is missing (separate logic — this field is not a directory and its default depends on what's actually in the codebase):
+
+1. Check whether `<code-patterns-dir>/linting.md` already exists.
+   - If it exists, read it to determine the suggested default: contains `No linters detected.` → suggest `None`; otherwise → suggest `Enabled`.
+   - If it does not exist, suggest `Enabled` (the user can then opt in to detection).
+2. Ask (using `AskUserQuestion`):
+
+   > **No linting setting found. How should Arness handle linting for this project? \<suggested default shown above\>**
+   > 1. **Enabled** — discover the project's linters and use them as a gate before commits
+   > 2. **None** — project has no linters configured
+   > 3. **Skip** — keep the lint gate disabled (you can change this later)
+
+3. Apply the choice:
+   - **Enabled** — if `<code-patterns-dir>/linting.md` does not exist, invoke `arn-code-codebase-analyzer` to generate it (the analyzer's step 3C produces this file). Write `Linting: enabled` to the config block.
+   - **None** — write `Linting: none` to the config block. Do not invoke the analyzer.
+   - **Skip** — write `Linting: skip` to the config block. Do not invoke the analyzer.
+
+The Linting field is intentionally handled separately from directory fields: directories have safe defaults; linting requires a real choice because it gates commits.
 
 ### 2d. If `## Arness` Exists and All Code Fields Are Present
 

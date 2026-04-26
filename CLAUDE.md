@@ -74,6 +74,16 @@ When creating a PR, always suggest bumping the `version` in the affected plugin'
 
 Include the version bump in the PR commit, not as a separate commit.
 
+## Linting Configuration
+
+Each project's `## Arness` block carries a `Linting:` field with one of three values:
+
+- **`enabled`** — run lint as a hard gate. The codebase analyzer detects per-service linters and writes them to `<code-patterns-dir>/linting.md`. The `arn-code-task-executor` runs lint on touched files at task completion (silent — findings flow into the implementation report). The `arn-code-ship` skill runs lint against the staged diff before commit and surfaces a 3-option menu (Fix now / File a backlog issue / Proceed with documented reason) when issues are found, with the suggested default adapting to issue count.
+- **`none`** — project has no linters configured. Lint gates are skipped silently in both executor and ship.
+- **`skip`** — user explicitly disabled the gate. Same behavior as `none`; provided so the user can opt back in later.
+
+When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user with the same 3-option menu and, if `enabled` is chosen, invokes the codebase analyzer to generate `linting.md`. The `Discovered run command` in `linting.md` is a hint — downstream consumers adapt to the actual environment (e.g., pnpm vs npm).
+
 ## Testing Locally as a Plugin
 
 ```bash
@@ -103,6 +113,7 @@ claude --plugin-dir plugins/arn-infra
 - **Spikes directory:** .arness/spikes
 - **Visual grounding directory:** .arness/visual-grounding
 - **Reports directory:** .arness/reports
+- **Linting:** skip
 - **Git:** yes
 - **Platform:** github
 - **Issue tracker:** github

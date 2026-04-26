@@ -6,7 +6,7 @@ description: >-
   or wants to execute a single specific task from the task list with optional
   review. This is for ONE task only — for executing the full plan (all tasks),
   use arn-code-execute-plan instead.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Arness Execute Task
@@ -171,7 +171,25 @@ If deferred visual testing layers exist in CLAUDE.md (any `#### Layer N:` subsec
 - **Task is blocked by incomplete dependencies** -- warn user, let them decide whether to proceed anyway
 - **Project directory missing** -- suggest running `/arn-code-save-plan` to create the project structure
 - **Executor fails** -- read agent output, report to user, offer retry
-- **Executor reports 3-attempt test failure** -- present failure details, ask: retry with more context, skip, or abort
+- **Executor reports test failures.** Branch on the executor's classification (from the implementation/testing report's `unrelatedTestFailures` array and any 3-attempt self-heal failures):
+
+  **Branch 1 — only `unrelatedTestFailures` reported (no 3-attempt self-heal failure):** the executor confirmed the failing tests are not related to the task's modified files. Show the full classification reasoning (test names, modified files checked, observed test imports). Then ask (using `AskUserQuestion`):
+
+  > **One or more pre-existing tests are failing but appear unrelated to this task. How would you like to proceed?**
+  > 1. **Address now** — pause this task, investigate and fix the failing tests
+  > 2. **File a backlog issue and continue** — record the failures as a tracked issue, mark task complete
+  > 3. **Continue with documented reason** — proceed without filing a backlog issue, annotate the task report
+
+  Apply the choice. For "File a backlog issue", create the issue on the configured platform (`gh issue create` for github, Jira MCP for jira; if Issue tracker is `none`, warn the user and fall back to "Continue with documented reason"). Use the failing test names + classification reasoning as the issue body.
+
+  **Branch 2 — executor reports a 3-attempt self-heal failure on a `related-or-uncertain` test:** present failure details (test name, error output, files involved). Then ask (using `AskUserQuestion`):
+
+  > **A test failure persists after 3 fix attempts. The failure may be related to this task. How would you like to proceed?**
+  > 1. **Retry with more context** — give the executor more guidance and try again
+  > 2. **Skip the failing task** — mark this task as incomplete and continue
+  > 3. **Abort execution** — stop now
+
+  If `unrelatedTestFailures` are also present in the same report, mention them briefly so the user has the full picture.
 - **Reviewer fails** -- report to user, offer to skip review or retry
 - **Review cycle exceeds 2 retries** -- escalate to user with full review findings, ask: retry with more context, skip review, or abort
 - **Resume fails (API error or agent ID no longer valid)** -- fall back to fresh dispatch mode, inform user

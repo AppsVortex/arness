@@ -116,18 +116,26 @@ When your task references the "Testing section" of a phase plan:
    - Go: `go test ./pkg/specific/...`
    - Use the test command from the phase plan directives or INTRODUCTION.md if specified
 6. Optionally run a broader scope around touched modules (same test file or directory) to check for regressions in the immediate area
-7. **Self-healing**: If tests fail due to implementation bugs:
+7. **Classify failure relatedness (BEFORE any self-healing).** Do this once per failing test, before entering the self-heal loop in step 8:
+   - List the files this task modified (you know them — you just touched them).
+   - For each failing test: read the test file; collect its top-of-file imports/requires/uses, plus any direct file paths in fixtures or setup blocks.
+   - Cross-check: does any task-modified path appear in the test's import graph (one transitive hop is enough — e.g., the test imports module X which imports module Y where Y is task-modified)?
+   - **Optional pre-existing-failure check** (only when cheap and safe — `git status --porcelain` shows a clean working tree, no risk of losing unstaged changes): run `git stash && <precise-test-cmd> && git stash pop` to confirm the test was failing on the prior tree.
+   - Classify each failing test:
+     - **`related-or-uncertain`** — overlap exists in the import graph, OR the analysis is inconclusive. Apply the self-heal loop in step 8.
+     - **`unrelated-confirmed`** — no import overlap AND (when run) the stash-test confirmed pre-existing failure. **Do NOT enter the self-heal loop.** Record the test in the implementation report under a new `unrelatedTestFailures` array with this structure: `{testName, classification: "unrelated-confirmed", reasoning, modifiedFilesChecked, testImportsObserved}`. Continue with the rest of the testing task.
+8. **Self-healing (only for `related-or-uncertain` failures):** If tests classified above as related-or-uncertain fail due to implementation bugs:
    - Investigate the root cause
    - Fix the implementation
    - Document the fix in the report (`bugsFixed` array) with "FIXED:" prefix describing what was wrong and what was changed
    - Re-run tests
-   - Only proceed when ALL tests pass
-   - If the same failure persists after 3 fix attempts, stop and report the state
-8. Generate testing report:
+   - Only proceed when ALL related-or-uncertain tests pass
+   - If the same failure persists after 3 fix attempts, stop and report the state. The report must distinguish attempted-but-unfixable (3-attempt failure on a related-or-uncertain test) from classified-unrelated (`unrelatedTestFailures`).
+9. Generate testing report:
    - Template: `TESTING_REPORT_TEMPLATE.json` from the report template path provided in your spawn prompt
    - Save to: `<project-folder>/reports/TESTING_REPORT_PHASE_N.json`
    - If file exists, use timestamp suffix
-9. Verify acceptance criteria from the plan
+10. Verify acceptance criteria from the plan
 
 ## Visual Capture (if configured)
 
@@ -161,15 +169,22 @@ After completing implementation or testing, check if visual testing is configure
 When your assigned task is complete:
 
 1. Verify all acceptance criteria from the phase plan.
-2. Ensure the report JSON is generated and saved to `<project-folder>/reports/`:
+2. **Run lint on touched files (if `Linting: enabled`).** Read the `Linting:` field from CLAUDE.md `## Arness` block:
+   - If `Linting: none` or `Linting: skip` (or the field is missing) — skip this step silently.
+   - If `Linting: enabled` — read `<code-patterns-dir>/linting.md`. For each service/package section in `linting.md`, check whether any of `filesCreated` + `filesModified` falls within that section's scope (use the `Scope hint` to determine inclusion). For each matched section: invoke the `Discovered run command`, narrowed to the touched files when the linter supports per-file invocation (e.g., `eslint <files>`, `ruff check <files>`, `golangci-lint run <files>`). If the discovered command targets the project root and the linter does not support per-file scoping, run it as-is.
+   - Capture lint output. Parse it into structured findings: `{tool, file, line, severity, message}`. Add a new `lintFindings` array to the implementation report (or testing report) with these entries. Do NOT prompt the user — this step is silent at the task level. The user-facing decision happens at ship time.
+   - If a linter command fails to execute (binary not found, config invalid), record a single entry `{tool, file: null, line: null, severity: "error", message: "Linter failed to execute: <stderr>"}` in `lintFindings` and continue. Do not block task completion.
+3. Ensure the report JSON is generated and saved to `<project-folder>/reports/`:
    - **Implementation tasks:** `IMPLEMENTATION_REPORT_PHASE_N.json` -- populated from `IMPLEMENTATION_REPORT_TEMPLATE.json`
    - **Testing tasks:** `TESTING_REPORT_PHASE_N.json` -- populated from `TESTING_REPORT_TEMPLATE.json`
-3. Return a brief summary to the caller containing:
+4. Return a brief summary to the caller containing:
    - What was implemented or tested
    - Report file path(s)
    - List of files created and files modified
    - Any issues encountered or bugs fixed
    - Visual capture directory path (if captures were taken)
+   - **`unrelatedTestFailures`** — pre-existing failing tests detected during testing tasks (if any), with classification reasoning. The orchestrator uses this to prompt the user.
+   - **`lintFindings`** — count and severity breakdown of lint findings (if `Linting: enabled`). Full details remain in the report.
 
 The report is the primary artifact -- keep the summary concise. The orchestrator (skill) is responsible for updating task status -- not this agent.
 

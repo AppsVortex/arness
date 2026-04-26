@@ -108,7 +108,15 @@ For each pattern documented in code-patterns.md, testing-patterns.md, and ui-pat
 - Record:
   - Which tests were run (exact commands)
   - Pass/fail results for each
-  - If tests fail on re-run, this is an error finding
+- **For each failing test on re-run, classify before declaring an error:**
+  1. Read the failing test file's imports/requires/uses (top-of-file plus any direct paths in fixtures/setup).
+  2. Cross-check those imports against the task's `filesCreated` + `filesModified` (already loaded from the implementation report).
+  3. Classify:
+     - **`related-or-uncertain`** — overlap exists, OR the analysis is inconclusive. Treat as an `error` finding, category `test`, as today.
+     - **`unrelated-confirmed`** — no import overlap. Treat as an `info` finding, category `test`, with description: "Pre-existing test failure — not related to this task's modified files. Verify on base ref before treating as a regression." Include the same classification reasoning the executor would provide (`testName`, `modifiedFilesChecked`, `testImportsObserved`).
+  4. If the executor's report already includes the test in `unrelatedTestFailures`, prefer that classification — do not re-classify, just carry it forward as an `info` finding.
+
+This makes the reviewer's verdict more accurate: a task with only unrelated failures should NOT be marked `needs-fixes` solely on that basis (see step 8 verdict criteria).
 
 ### 4. Architecture Check
 
@@ -148,7 +156,7 @@ This step is conditional -- skip it entirely if visual testing config was not pr
 Each finding gets the following fields:
 
 - **checkId:** `TR-NNN` (sequential, e.g., TR-001, TR-002)
-- **severity:** `error` (blocks progress) or `warning` (non-blocking)
+- **severity:** `error` (blocks progress), `warning` (non-blocking), or `info` (advisory; never blocks). `info` is used for pre-existing test failures classified as unrelated, and for missing-but-not-required context like absent architecture docs.
 - **category:** `acceptance`, `pattern`, `test`, `architecture`, `visual`, or `quality`
 - **description:** What was found
 - **file:** The file path where the issue is located
@@ -158,7 +166,7 @@ Each finding gets the following fields:
 **Error criteria** (severity = error):
 
 - Failed acceptance criterion
-- Test failures on re-run
+- Test failures on re-run **classified as `related-or-uncertain`** (see step 3). Pre-existing failures classified as `unrelated-confirmed` are recorded as `info` findings instead.
 - Pattern violation (code contradicts a documented pattern)
 - Architecture boundary violation
 

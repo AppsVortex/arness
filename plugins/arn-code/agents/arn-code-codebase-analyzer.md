@@ -138,6 +138,62 @@ Find 2-3 real examples per applicable category. Skip categories that are not pre
 - **Preview mechanism:** How to preview the sketch (browser, terminal command, app launch)
 - **Promotion rules:** How sketch artifacts would be promoted into the real codebase
 
+### 3C. Analyze linting patterns
+
+Detect linters per service/package so the lint gate at `arn-code-ship` and the per-task lint signal in `arn-code-task-executor` can run the right linter against the right files. Be language-agnostic and monorepo-aware: a polyglot monorepo may have eslint in `apps/web/`, ruff+mypy in `apps/api/`, and a root-level prettier sweep over markdown.
+
+**Detection sources** (scan all that apply):
+
+- **Node/TypeScript:** `package.json` scripts (`lint`, `format`, `typecheck`); `eslint`, `prettier`, `biome`, `tsc`, `oxlint` in `dependencies`/`devDependencies`. Config files: `.eslintrc*`, `.prettierrc*`, `eslint.config.*`, `biome.json`, `tsconfig.json`.
+- **Python:** `pyproject.toml` (tool sections: `tool.ruff`, `tool.flake8`, `tool.pylint`, `tool.mypy`, `tool.black`, `tool.isort`); `setup.cfg`, `tox.ini`, `.flake8`. Pre-commit: `.pre-commit-config.yaml`.
+- **Go:** `golangci.yml`, `.golangci.yml`. Standard tooling: `go vet`, `gofmt`, `staticcheck`.
+- **Ruby:** `.rubocop.yml`, `Gemfile` (rubocop dependency).
+- **Rust:** `clippy.toml`, `Cargo.toml` (lints section).
+- **Cross-language:** `Makefile` targets (`lint`, `check`, `format`); `.pre-commit-config.yaml` (any language); top-level `lefthook.yml`, `husky` hooks.
+
+**Monorepo handling:**
+
+- Detect monorepo structure from step 1 results: `package.json` workspaces, `pnpm-workspace.yaml`, `turbo.json`, `nx.json`, `lerna.json`, Cargo workspace, Go workspaces (`go.work`).
+- For each detected service/package directory, repeat the detection scan above. Each section in the output corresponds to one service/package that has its own linter config.
+- A linter at the root that covers everything (e.g., a single eslint at the monorepo root with no per-package overrides) gets a single `(root)` section.
+- A linter at the root that delegates per-package (e.g., `package.json` workspace scripts) gets per-service sections for the actual delegated commands.
+
+**For each detected linter section, capture:**
+
+- **Linters:** comma-separated list of tool names (e.g., `eslint, prettier`)
+- **Config files:** paths to the discovered config files
+- **Discovered run command:** best-guess invocation. Prefer high-level entry points: `npm run lint` if a script is defined; otherwise tool-direct: `ruff check`, `golangci-lint run`. For monorepo workspace packages, prefer the workspace runner: `npm run lint --workspace=apps/web`, `pnpm --filter apps/web lint`, etc.
+- **Scope hint:** which file extensions and/or directories this linter targets (e.g., `*.ts, *.tsx in apps/web/src`)
+
+**Output:**
+
+Write the result to `<code-patterns-dir>/linting.md` following this schema:
+
+```md
+# Linting Patterns
+
+## (root) | <service-or-package-path>
+
+- **Linters:** <comma-separated list>
+- **Config files:** <paths discovered>
+- **Discovered run command:** <best-guess invocation>
+- **Scope hint:** <extensions and directories>
+
+(repeat per service/package)
+```
+
+**If no linters are detected anywhere:** write a single-line `linting.md`:
+
+```md
+# Linting Patterns
+
+No linters detected.
+```
+
+The caller (init or ensure-config) will default the `Linting:` config field to `none` in this case.
+
+The "Discovered run command" is a *hint*, not authoritative. Downstream consumers (the executor's per-task lint, the ship pre-commit gate) are expected to adapt — for example, if the project uses pnpm but the discovered command says `npm run lint`, the consumer can correct based on the lockfile actually present in the repo.
+
 ### 4. Compile architecture documentation
 
 Build the following architecture artifacts:
@@ -170,6 +226,8 @@ utility libraries, simple scripts with no auth/API/user input).
 Output must follow the pattern file schemas. Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/pattern-schema.md` for the exact format specification.
 
 Your output format is shared with the `arn-code-pattern-architect` agent. Both agents must produce structurally identical output so downstream consumers can use either interchangeably. For projects with a user-facing interface (frontend, fullstack, cli, tui, desktop, mobile), both agents produce a fourth `# UI Patterns` section including a `## Sketch Strategy`. For projects with a security surface, both agents produce a fifth `# Security Patterns` section.
+
+Linting detection is emitted as a separate file (`<code-patterns-dir>/linting.md`) following the schema in step 3C. It is produced regardless of project type; if no linters are detected, the file contains the single-line "No linters detected." marker so callers can default the `Linting:` config field to `none`.
 
 ## Rules
 

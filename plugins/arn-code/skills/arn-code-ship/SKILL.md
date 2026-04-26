@@ -9,7 +9,7 @@ description: >-
   staging, committing with meaningful messages, pushing, and PR creation.
   Works standalone or as the final Arness pipeline step. Do NOT use this for
   reviewing PRs — use /arn-code-review-pr for that.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Arness Ship
@@ -65,23 +65,47 @@ If no uncommitted changes AND no commits ahead of remote, inform the user: "Noth
    - `.env`, `.env.*`
    - Files containing `credential`, `secret`, `token`, `password`, `key` in their name
    - `id_rsa`, `*.pem`, `*.key`
-3. Offer staging options via `AskUserQuestion`:
+3. **Lint Gate.** Read the `Linting:` field from CLAUDE.md `## Arness` block:
+   - If `Linting: none` or `Linting: skip` (or the field is missing) — skip this sub-step silently and proceed to staging.
+   - If `Linting: enabled`:
+     1. Read `<code-patterns-dir>/linting.md` (the per-service linter detection produced by `arn-code-codebase-analyzer`).
+     2. Compute the staged diff scope: `git diff --name-only HEAD` (or against the base branch if uncommitted changes are not yet staged — fall back gracefully).
+     3. For each section in `linting.md` whose `Scope hint` intersects the diff, invoke the section's `Discovered run command` against the changed files within that scope. When the linter supports per-file invocation (eslint, ruff, golangci-lint, prettier, etc.), narrow the invocation to the changed files; otherwise run as-is.
+     4. Aggregate results across all invocations: total issue count `N`, breakdown per service.
+     5. **If `N == 0`:** print a one-line confirmation ("Lint clean: 0 issues across <services>.") and proceed to staging.
+     6. **If `N > 0`:** show the breakdown (per-service counts, severity totals). Determine the suggested default:
+        - `N <= 20` → suggest **Fix now**
+        - `N > 20` → suggest **File a backlog issue**
+        Then ask (using `AskUserQuestion`):
+
+        > **Found N linting issues across \<comma-separated services\>. Suggested: \<Fix now | File a backlog issue\>. How would you like to proceed?**
+        > 1. **Fix now** — pause shipping, address the linting issues, then return
+        > 2. **File a backlog issue and proceed** — record the issues for later, proceed with commit
+        > 3. **Proceed with documented reason** — annotate the commit message with rationale, proceed without filing a backlog issue
+
+        Apply the choice:
+        - **(1) Fix now** — exit `arn-code-ship`. Tell the user: "Run your linter, fix the issues, then re-run `/arn-code-ship` when ready." Do not commit.
+        - **(2) File a backlog issue and proceed** — read the `Issue tracker` field from `## Arness`. For `github`: `gh issue create --title "Lint backlog: N issues from <branch>" --body "<lint output summary>"`. For `jira`: use the Atlassian MCP server to create the issue with the same title and body. For `none`: warn the user that no issue tracker is configured and fall back to choice (3). Then proceed to staging.
+        - **(3) Proceed with documented reason** — prompt the user for a one-line rationale. Append "Lint exception: <rationale>" to the commit message body (this happens later in sub-step 6). Proceed to staging.
+   - If a linter command fails to execute (binary not found, config invalid): warn the user with the specific error and fall through to the standard 3-option menu treating the failure as a single issue (`N=1`, suggested default: Fix now). Do not silently skip the gate on a tool failure.
+4. Offer staging options via `AskUserQuestion`:
    - **Stage all changes** — `git add -A`
    - **Choose files to stage** — show the list, let user select
    - **Already staged** — user has manually staged files, proceed with what's staged
-4. Scan for CHANGE_RECORD.json:
+5. Scan for CHANGE_RECORD.json:
    - Read `## Arness` config from CLAUDE.md to get the plans directory
    - Scan for `CHANGE_RECORD.json` in plans subdirectories: `SWIFT_*/CHANGE_RECORD.json`, `STANDARD_*/CHANGE_RECORD.json`, `CATCHUP_*/CHANGE_RECORD.json`, and `*/CHANGE_RECORD.json`
    - If multiple found, use the most recently modified file
    - If found, read the `ceremonyTier` field to determine the tier tag
-5. Generate a commit message:
+6. Generate a commit message:
    - Detect the project's commit convention from `git log --oneline -10` and follow it. Default to imperative mood (e.g., "Add feature X", not "Added feature X").
    - If a CHANGE_RECORD.json was found, prepend the tier tag to the commit message: `[swift]`, `[standard]`, `[thorough]`, or `[catchup]` (e.g., `[swift] Add rate limiting to /api/users`)
    - If Arness context is available (project name, spec, plan), use it to generate a meaningful commit message summarizing the changes
    - Otherwise, generate from `git diff --staged --stat` and file content
+   - If sub-step 3 (Lint Gate) was resolved with **Proceed with documented reason**: append "Lint exception: <rationale>" to the commit message body before presenting it.
    - Present the generated message to the user
    - Let the user customize or approve
-6. Commit using the approved message
+7. Commit using the approved message
 
 ---
 
