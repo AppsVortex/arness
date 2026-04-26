@@ -10,7 +10,7 @@ description: >-
   The skill invokes the arn-code-feature-planner agent to generate the plan,
   presents it for review, and iterates on user feedback until approved.
   Produces a PLAN_PREVIEW file that feeds into /arn-code-save-plan.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Arness Plan
@@ -75,6 +75,38 @@ Then invoke `arn-code-codebase-analyzer` (existing codebase) or `arn-code-patter
 
 ---
 
+### Step 3.5: Verify Spec Alignment with Current Codebase
+
+Specs may have been written days or weeks before being planned. The codebase moves in the meantime — files get renamed, modules refactored, frameworks swapped. Before invoking the planner, verify the spec's concrete references still hold against HEAD.
+
+Spawn the `arn-code-drift-detector` agent via the Task tool with this context:
+
+```
+Verify whether the following specification still aligns with the current codebase.
+
+**Spec file:** <specs-dir>/<spec-filename>
+**Source root:** <repo root>
+
+Return a structured drift report with severity classified as none, minor, moderate, or major.
+```
+
+Capture the agent's drift report and branch on severity:
+
+- **`none`** — proceed silently to Step 4.
+- **`minor`** — display the report's `Summary` line to the user (one sentence). Carry the full drift report forward as an annotation to the planner agent's context (see Step 4 input block below). Proceed to Step 4.
+- **`moderate` or `major`** — display the full drift report. Then ask the user how to proceed using `AskUserQuestion`:
+
+  **The spec has drifted from the current codebase. How would you like to proceed?**
+  1. **Refresh the spec** — route to `/arn-code-feature-spec` (or `/arn-code-bug-spec` for a bug spec) with the drift report as input so the spec can be updated against current reality.
+  2. **Proceed with annotations** — pass the drift report to the planner so it accounts for the divergence while building the plan.
+  3. **Abort** — exit the skill; no plan generated.
+
+  Honor the user's choice. On (1), exit this skill and route to the spec skill. On (3), exit cleanly. On (2), continue to Step 4 with the drift report attached.
+
+If the drift detector itself fails (e.g., spec file unreadable, git unavailable), inform the user and ask whether to proceed without a drift check. Do not block on a tool failure.
+
+---
+
 ### Step 4: Invoke the Planner Agent
 
 Derive the spec name from the spec filename (strip prefix and extension):
@@ -97,6 +129,10 @@ You are generating an implementation plan for the following specification.
 --- SPECIFICATION CONTENT ---
 [full spec file content]
 --- END SPECIFICATION ---
+
+--- DRIFT REPORT ---
+[full drift report from Step 3.5, if severity was minor/moderate/major and the user chose to proceed; omit this section entirely if severity was none]
+--- END DRIFT REPORT ---
 
 --- CODEBASE PATTERNS ---
 [code-patterns.md content]
