@@ -179,6 +179,18 @@ Proceed to Layer 2.
 
 ## Layer 2: Config Check (Ensure-Config)
 
+**Required Arness Code fields** (canonical list — both 2c and 2d route based on this list):
+
+- `Plans directory`
+- `Specs directory`
+- `Report templates`
+- `Template path`
+- `Code patterns`
+- `Docs directory`
+- `Linting`
+
+Layer 2a reads CLAUDE.md. Layer 2b runs if no `## Arness` section exists. Layer 2c runs if **any** required field is missing — including `Linting`. Layer 2d only fast-paths when **every** required field above is present. The `Linting` field was added later than the other fields, so it is common for an existing `## Arness` block to have all the original fields but be missing `Linting` — that case must route to 2c, not fast-path through 2d.
+
 ### 2a. Read CLAUDE.md
 
 Read the project's CLAUDE.md and look for a `## Arness` section.
@@ -254,9 +266,9 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/template-setup.md` a
 Read the plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` and write:
 - `Template version` field to `## Arness` with the plugin version
 
-### 2c. If `## Arness` Exists But Arness Code Fields Are Missing
+### 2c. If `## Arness` Exists But ANY Required Field Is Missing (including Linting)
 
-Check for the presence of Arness Code fields: `Plans directory`, `Specs directory`, `Report templates`, `Template path`, `Code patterns`, `Docs directory`, `Linting`.
+Check the existing `## Arness` section against the **Required Arness Code fields** list at the top of Layer 2. If any field on that list is missing — including `Linting`, which is the most common omission for projects whose `## Arness` block predates the lint feature — run the logic below. Do NOT fall through to 2d unless every field on the canonical list is present.
 
 If directory-style fields (`Plans directory`, `Specs directory`, `Report templates`, `Template path`, `Code patterns`, `Docs directory`) are missing:
 
@@ -286,9 +298,11 @@ If the `Linting:` field is missing (separate logic — this field is not a direc
 
 The Linting field is intentionally handled separately from directory fields: directories have safe defaults; linting requires a real choice because it gates commits.
 
-### 2d. If `## Arness` Exists and All Code Fields Are Present
+### 2d. If `## Arness` Exists and ALL Required Fields (Including Linting) Are Present
 
-**Fast path.** No action needed. Proceed to Layer 3.
+**Fast path.** Before silently proceeding, verify against the **Required Arness Code fields** list at the top of Layer 2 — every field on that list must be present in the existing `## Arness` block. If any are missing, route to Layer 2c instead (do NOT fast-path).
+
+If all required fields are present, no action needed; proceed to Layer 3.
 
 ---
 
