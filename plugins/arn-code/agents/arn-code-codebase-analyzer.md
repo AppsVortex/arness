@@ -138,32 +138,37 @@ Find 2-3 real examples per applicable category. Skip categories that are not pre
 - **Preview mechanism:** How to preview the sketch (browser, terminal command, app launch)
 - **Promotion rules:** How sketch artifacts would be promoted into the real codebase
 
-### 3C. Analyze linting patterns
+### 3C. Analyze linting and formatting patterns
 
-Detect linters per service/package so the lint gate at `arn-code-ship` and the per-task lint signal in `arn-code-task-executor` can run the right linter against the right files. Be language-agnostic and monorepo-aware: a polyglot monorepo may have eslint in `apps/web/`, ruff+mypy in `apps/api/`, and a root-level prettier sweep over markdown.
+Detect linters and formatters per service/package so the gate at `arn-code-ship` and the per-task signal in `arn-code-task-executor` can run the right tools against the right files. Stay technology-agnostic: this analyzer must work for any project regardless of language, ecosystem, or build system. Do not pattern-match against a fixed list of tool names — recognize the project's actual tooling using the evidence categories below and use judgement.
 
-**Detection sources** (scan all that apply):
+**Linters vs formatters.** Both produce findings about source files and act as pre-commit gates, but they have different semantics:
 
-- **Node/TypeScript:** `package.json` scripts (`lint`, `format`, `typecheck`); `eslint`, `prettier`, `biome`, `tsc`, `oxlint` in `dependencies`/`devDependencies`. Config files: `.eslintrc*`, `.prettierrc*`, `eslint.config.*`, `biome.json`, `tsconfig.json`.
-- **Python:** `pyproject.toml` (tool sections: `tool.ruff`, `tool.flake8`, `tool.pylint`, `tool.mypy`, `tool.black`, `tool.isort`); `setup.cfg`, `tox.ini`, `.flake8`. Pre-commit: `.pre-commit-config.yaml`.
-- **Go:** `golangci.yml`, `.golangci.yml`. Standard tooling: `go vet`, `gofmt`, `staticcheck`.
-- **Ruby:** `.rubocop.yml`, `Gemfile` (rubocop dependency).
-- **Rust:** `clippy.toml`, `Cargo.toml` (lints section).
-- **Cross-language:** `Makefile` targets (`lint`, `check`, `format`); `.pre-commit-config.yaml` (any language); top-level `lefthook.yml`, `husky` hooks.
+- **Linters** = static analysis — report findings about correctness, style, complexity, types. Often partial-fix or no-fix. The check command is the gate command.
+- **Formatters** = mechanical layout transforms — whitespace, quotes, line wrap. Almost always have a check mode (no mutation) AND a write mode (mutation). The gate command MUST be the check mode; never invoke a write/mutation mode as the gate, because that silently rewrites files behind the user.
 
-**Monorepo handling:**
+Some tools blur the line (a single tool may have both a linting subcommand and a formatting subcommand). When that happens, list the tool under both with the appropriate sub-commands.
 
-- Detect monorepo structure from step 1 results: `package.json` workspaces, `pnpm-workspace.yaml`, `turbo.json`, `nx.json`, `lerna.json`, Cargo workspace, Go workspaces (`go.work`).
-- For each detected service/package directory, repeat the detection scan above. Each section in the output corresponds to one service/package that has its own linter config.
-- A linter at the root that covers everything (e.g., a single eslint at the monorepo root with no per-package overrides) gets a single `(root)` section.
-- A linter at the root that delegates per-package (e.g., `package.json` workspace scripts) gets per-service sections for the actual delegated commands.
+**Evidence categories (technology-agnostic — scan any that exist):**
 
-**For each detected linter section, capture:**
+1. **Dependency / package manifests.** Whatever manifest the project's ecosystem uses (Node, Python, Rust, Ruby, Go, Java, .NET, etc.). Look at declared dependencies and dev-dependencies for any tool whose name or purpose suggests static analysis, type-checking, formatting, or style enforcement.
+2. **Tool config files.** Hidden or top-level files at the project/service root whose names match the pattern of a tool config (`.<tool>rc*`, `<tool>.config.*`, `<tool>.toml`, `<tool>.yml`, `<tool>.json`, etc.). Their presence implies the tool is in use even if the dependency manifest is sparse.
+3. **Script / target entry points.** Project task runners — `package.json` scripts, `Makefile` targets, `tox.ini` / `nox` envs, `Justfile` recipes, `pdm` / `poetry` / `hatch` script tables, custom shell scripts, etc. Look for entries named `lint`, `lint:*`, `format`, `format:*`, `format:check`, `check`, `typecheck`, `precommit`, `verify`, etc., or anything whose body invokes a tool you recognize as a linter or formatter.
+4. **Pre-commit-style runners.** `.pre-commit-config.yaml`, `lefthook.yml`, `husky/_/` hooks, `.git/hooks/`, CI workflow files (`.github/workflows/`, `.gitlab-ci.yml`, etc.). These often declare the canonical check commands.
 
-- **Linters:** comma-separated list of tool names (e.g., `eslint, prettier`)
+The model is expected to recognize whatever the project actually uses regardless of whether it appears on any pre-enumerated list. If you encounter a tool you don't immediately recognize, search the project for its usage and infer its role from how it's invoked.
+
+**Monorepo / multi-service handling.**
+
+If step 1 detected a monorepo structure (workspace declarations, multi-package directories like `apps/`, `packages/`, `services/`, `cmd/`, etc.), repeat the detection scan inside each service/package directory. Each section in the output corresponds to one service/package that has distinct tooling. A single root-level setup that covers everything gets one `(root)` section. A monorepo with per-package overrides gets per-service sections.
+
+**For each detected section, capture:**
+
+- **Linters:** comma-separated list of detected linter tool names (or empty if none)
+- **Formatters:** comma-separated list of detected formatter tool names (or empty if none)
 - **Config files:** paths to the discovered config files
-- **Discovered run command:** best-guess invocation. Prefer high-level entry points: `npm run lint` if a script is defined; otherwise tool-direct: `ruff check`, `golangci-lint run`. For monorepo workspace packages, prefer the workspace runner: `npm run lint --workspace=apps/web`, `pnpm --filter apps/web lint`, etc.
-- **Scope hint:** which file extensions and/or directories this linter targets (e.g., `*.ts, *.tsx in apps/web/src`)
+- **Discovered check command:** a single command that runs ALL detected check-mode invocations for this section. **MUST be check-only — never a write or mutation command.** If the project only exposes a mutation-mode entry point (e.g., a `format` script that writes files but no `format:check` script), do NOT use it as the discovered command. Instead either (a) derive a check-mode invocation directly (e.g., the formatter's `--check` or `--dry-run` flag), or (b) list the tool but leave the check command field empty with a one-line note "(no check-mode entry point detected — manual configuration needed)". Prefer high-level entry points (named scripts) when the project provides them. For monorepos, prefer the workspace runner that scopes to the right service.
+- **Scope hint:** which file extensions and/or directories these tools target
 
 **Output:**
 
@@ -174,25 +179,26 @@ Write the result to `<code-patterns-dir>/linting.md` following this schema:
 
 ## (root) | <service-or-package-path>
 
-- **Linters:** <comma-separated list>
+- **Linters:** <comma-separated list, or empty>
+- **Formatters:** <comma-separated list, or empty>
 - **Config files:** <paths discovered>
-- **Discovered run command:** <best-guess invocation>
+- **Discovered check command:** <check-only invocation, or empty with a note>
 - **Scope hint:** <extensions and directories>
 
 (repeat per service/package)
 ```
 
-**If no linters are detected anywhere:** write a single-line `linting.md`:
+**If no linters or formatters are detected anywhere:** write a single-line `linting.md`:
 
 ```md
 # Linting Patterns
 
-No linters detected.
+No linters or formatters detected.
 ```
 
 The caller (init or ensure-config) will default the `Linting:` config field to `none` in this case.
 
-The "Discovered run command" is a *hint*, not authoritative. Downstream consumers (the executor's per-task lint, the ship pre-commit gate) are expected to adapt — for example, if the project uses pnpm but the discovered command says `npm run lint`, the consumer can correct based on the lockfile actually present in the repo.
+The discovered check command is a *hint*, not authoritative. Downstream consumers (the executor's per-task lint, the ship pre-commit gate) are expected to adapt to the actual environment — for example, if the project's lockfile indicates a different package manager than the one referenced in the discovered command.
 
 ### 4. Compile architecture documentation
 
@@ -227,7 +233,7 @@ Output must follow the pattern file schemas. Read `${CLAUDE_PLUGIN_ROOT}/skills/
 
 Your output format is shared with the `arn-code-pattern-architect` agent. Both agents must produce structurally identical output so downstream consumers can use either interchangeably. For projects with a user-facing interface (frontend, fullstack, cli, tui, desktop, mobile), both agents produce a fourth `# UI Patterns` section including a `## Sketch Strategy`. For projects with a security surface, both agents produce a fifth `# Security Patterns` section.
 
-Linting detection is emitted as a separate file (`<code-patterns-dir>/linting.md`) following the schema in step 3C. It is produced regardless of project type; if no linters are detected, the file contains the single-line "No linters detected." marker so callers can default the `Linting:` config field to `none`.
+Linting and formatter detection is emitted as a separate file (`<code-patterns-dir>/linting.md`) following the schema in step 3C. It is produced regardless of project type; if neither linters nor formatters are detected, the file contains the single-line "No linters or formatters detected." marker so callers can default the `Linting:` config field to `none`.
 
 ## Rules
 

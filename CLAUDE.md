@@ -78,11 +78,13 @@ Include the version bump in the PR commit, not as a separate commit.
 
 Each project's `## Arness` block carries a `Linting:` field with one of three values:
 
-- **`enabled`** — run lint as a hard gate. The codebase analyzer detects per-service linters and writes them to `<code-patterns-dir>/linting.md`. The `arn-code-task-executor` runs lint on touched files at task completion (silent — findings flow into the implementation report). The `arn-code-ship` skill runs lint against the staged diff before commit and surfaces a 3-option menu (Fix now / File a backlog issue / Proceed with documented reason) when issues are found, with the suggested default adapting to issue count.
-- **`none`** — project has no linters configured. Lint gates are skipped silently in both executor and ship.
+- **`enabled`** — run lint and format checks as a hard gate. The codebase analyzer detects per-service linters and formatters and writes them to `<code-patterns-dir>/linting.md`. The `arn-code-task-executor` runs check-mode invocations on touched files at task completion (silent — findings flow into the implementation report). The `arn-code-ship` skill runs the same checks against the staged diff before commit and surfaces a 3-option menu (Fix now / File a backlog issue / Proceed with documented reason) when issues are found, with the suggested default adapting to issue count.
+- **`none`** — project has no linters or formatters configured. Gates are skipped silently in both executor and ship.
 - **`skip`** — user explicitly disabled the gate. Same behavior as `none`; provided so the user can opt back in later.
 
-When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user with the same 3-option menu and, if `enabled` is chosen, invokes the codebase analyzer to generate `linting.md`. The `Discovered run command` in `linting.md` is a hint — downstream consumers adapt to the actual environment (e.g., pnpm vs npm).
+When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user with the same 3-option menu and, if `enabled` is chosen, invokes the codebase analyzer to generate `linting.md`.
+
+The analyzer is technology-agnostic: it does not pattern-match against a fixed list of tool names. Instead it scans evidence categories (dependency manifests, tool config files, script entry points, pre-commit-style runners) and recognizes whatever tooling the project actually uses. Linters and formatters are listed separately in `linting.md` because they have different semantics — formatters typically have both a check mode and a write mode, and the gate must invoke the check mode (`Discovered check command`) so files are never silently rewritten.
 
 ## Testing Locally as a Plugin
 

@@ -120,10 +120,10 @@ When your task references the "Testing section" of a phase plan:
    - List the files this task modified (you know them — you just touched them).
    - For each failing test: read the test file; collect its top-of-file imports/requires/uses, plus any direct file paths in fixtures or setup blocks.
    - Cross-check: does any task-modified path appear in the test's import graph (one transitive hop is enough — e.g., the test imports module X which imports module Y where Y is task-modified)?
-   - **Optional pre-existing-failure check** (only when cheap and safe — `git status --porcelain` shows a clean working tree, no risk of losing unstaged changes): run `git stash && <precise-test-cmd> && git stash pop` to confirm the test was failing on the prior tree.
+   - **Do NOT use `git stash` to confirm pre-existing failure.** Git worktrees share `.git/refs/stash` with the parent repo, so concurrent batch workers would clobber each other's stashes. This is fatal in `arn-code-batch-implement` and unsafe even outside batch mode if any other session is running. Rely on the import-graph overlap analysis above; if more confidence is needed, ask the user via the orchestrator's classification surface (you do not have direct user contact).
    - Classify each failing test:
      - **`related-or-uncertain`** — overlap exists in the import graph, OR the analysis is inconclusive. Apply the self-heal loop in step 8.
-     - **`unrelated-confirmed`** — no import overlap AND (when run) the stash-test confirmed pre-existing failure. **Do NOT enter the self-heal loop.** Record the test in the implementation report under a new `unrelatedTestFailures` array with this structure: `{testName, classification: "unrelated-confirmed", reasoning, modifiedFilesChecked, testImportsObserved}`. Continue with the rest of the testing task.
+     - **`unrelated-confirmed`** — no import overlap. **Do NOT enter the self-heal loop.** Record the test in the implementation report under a new `unrelatedTestFailures` array with this structure: `{testName, classification: "unrelated-confirmed", reasoning, modifiedFilesChecked, testImportsObserved}`. Continue with the rest of the testing task.
 8. **Self-healing (only for `related-or-uncertain` failures):** If tests classified above as related-or-uncertain fail due to implementation bugs:
    - Investigate the root cause
    - Fix the implementation
@@ -169,11 +169,11 @@ After completing implementation or testing, check if visual testing is configure
 When your assigned task is complete:
 
 1. Verify all acceptance criteria from the phase plan.
-2. **Run lint on touched files (if `Linting: enabled`).** Read the `Linting:` field from CLAUDE.md `## Arness` block:
+2. **Run lint and format checks on touched files (if `Linting: enabled`).** Read the `Linting:` field from CLAUDE.md `## Arness` block:
    - If `Linting: none` or `Linting: skip` (or the field is missing) — skip this step silently.
-   - If `Linting: enabled` — read `<code-patterns-dir>/linting.md`. For each service/package section in `linting.md`, check whether any of `filesCreated` + `filesModified` falls within that section's scope (use the `Scope hint` to determine inclusion). For each matched section: invoke the `Discovered run command`, narrowed to the touched files when the linter supports per-file invocation (e.g., `eslint <files>`, `ruff check <files>`, `golangci-lint run <files>`). If the discovered command targets the project root and the linter does not support per-file scoping, run it as-is.
-   - Capture lint output. Parse it into structured findings: `{tool, file, line, severity, message}`. Add a new `lintFindings` array to the implementation report (or testing report) with these entries. Do NOT prompt the user — this step is silent at the task level. The user-facing decision happens at ship time.
-   - If a linter command fails to execute (binary not found, config invalid), record a single entry `{tool, file: null, line: null, severity: "error", message: "Linter failed to execute: <stderr>"}` in `lintFindings` and continue. Do not block task completion.
+   - If `Linting: enabled` — read `<code-patterns-dir>/linting.md`. For each service/package section in `linting.md`, check whether any of `filesCreated` + `filesModified` falls within that section's scope (use the `Scope hint` to determine inclusion). For each matched section: invoke the section's `Discovered check command` — narrowed to the touched files when the underlying tool supports per-file invocation, run as-is otherwise. The discovered command MUST be a check-only command per the analyzer contract; if it appears to be a mutation command (writes files, has no `--check`/`--dry-run` flag), abort the lint step for that section and record a single warning finding noting the misconfiguration, then continue.
+   - Capture output from each invocation. Parse it into structured findings: `{tool, file, line, severity, message, kind}` where `kind` is `lint` or `format`. Add a new `lintFindings` array to the implementation report (or testing report) with these entries. Do NOT prompt the user — this step is silent at the task level. The user-facing decision happens at ship time.
+   - If a tool fails to execute (binary not found, config invalid), record a single entry `{tool, file: null, line: null, severity: "error", kind: "lint", message: "Tool failed to execute: <stderr>"}` in `lintFindings` and continue. Do not block task completion.
 3. Ensure the report JSON is generated and saved to `<project-folder>/reports/`:
    - **Implementation tasks:** `IMPLEMENTATION_REPORT_PHASE_N.json` -- populated from `IMPLEMENTATION_REPORT_TEMPLATE.json`
    - **Testing tasks:** `TESTING_REPORT_PHASE_N.json` -- populated from `TESTING_REPORT_TEMPLATE.json`
