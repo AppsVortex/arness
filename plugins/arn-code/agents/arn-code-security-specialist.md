@@ -30,7 +30,7 @@ description: >-
   Feature involves authentication. Security specialist provides brief threat/mitigation list.
   </commentary>
   </example>
-tools: [Read, Glob, Grep, LSP, WebSearch]
+tools: [Read, Glob, Grep, LSP, WebSearch, SendMessage]
 model: opus
 color: red
 ---

@@ -12,7 +12,7 @@ description: >-
   available. Requires an issue tracker (GitHub or Jira) to be configured
   for remote issue browsing. Do NOT use this for creating new issues — use
   /arn-code-create-issue for that.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # Arness Pick Issue
@@ -226,6 +226,42 @@ After the user has reviewed the issue details and agent assessment, offer option
 
 ---
 
+## Step 6.5: Spec Freshness Gate
+
+**Skip this step entirely** unless BOTH of the following are true:
+
+1. The user chose option 1 (**Route to spec**) in Step 6, AND
+2. An existing artifact will be carried into the hand-off — specifically:
+   - The local Feature Tracker path (Step 1b) located an existing `features/F-NNN-kebab-name.md`, OR
+   - A sub-feature spec already exists at `<specs-dir>/FEATURE_F-NNN.M_<name>.md` (the case noted in Step 7 where `arn-code-feature-spec` will load and refine an existing spec rather than create a new one).
+
+For brand-new issues with no prior feature file or spec, there is nothing to drift against — skip directly to Step 7.
+
+When the gate applies, spawn the `arn-code-drift-detector` agent via the Task tool with the existing feature file (or sub-feature spec) as the input spec:
+
+```
+Verify whether the following feature file / spec still aligns with the current codebase.
+
+**Spec file:** <features/F-NNN-kebab-name.md or <specs-dir>/FEATURE_F-NNN.M_<name>.md>
+**Source root:** <repo root>
+
+Return a structured drift report with severity classified as none, minor, moderate, or major.
+```
+
+Branch on the returned severity:
+
+- **`none`** or **`minor`** — proceed silently to Step 7. If `minor`, attach the drift report alongside the issue context in the Step 7 hand-off so the spec skill can adapt while refining.
+- **`moderate`** or **`major`** — display the full drift report, then ask the user how to proceed using `AskUserQuestion`:
+
+  **The existing feature file / spec has drifted from the current codebase. How would you like to proceed?**
+  1. **Refresh first** — route to the spec skill with instructions to update the feature file / spec against current reality before any planning.
+  2. **Hand off with drift report** — proceed to Step 7 and forward the drift report alongside the issue context so the spec skill can account for it.
+  3. **Cancel hand-off** — return to Step 6 (the user can pick a different action).
+
+If the drift detector itself fails (e.g., spec/feature file unreadable, git unavailable), inform the user and ask whether to proceed without a drift check. Do not block on a tool failure.
+
+---
+
 ## Step 7: Hand Off
 
 If the user chose to route to a spec skill:
@@ -234,6 +270,7 @@ If the user chose to route to a spec skill:
    - Issue title and body become the "feature idea" or "bug report" input.
    - Agent assessment provides initial analysis context.
    - Issue number (GitHub) or issue key (Jira) is included for traceability (the spec can reference it).
+   - **If a drift report was produced in Step 6.5** (severity `minor`, or `moderate`/`major` with the user choosing "Hand off with drift report"): include the full drift report so the spec skill can refresh stale references before producing the refined spec.
    - **If coming from the local Feature Tracker path (Step 1b):** Also include:
      - The feature ID (F-NNN or F-NNN.M) for traceability across the pipeline (spec, plan, branch, ship)
      - The full content of the individual feature file (`features/F-NNN-kebab-name.md`): description, journey steps, UI behavior, components, acceptance criteria, technical notes, use case postconditions, use case business rules, visual target, showcase references, debate insights

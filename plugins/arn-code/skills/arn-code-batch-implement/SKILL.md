@@ -8,7 +8,7 @@ description: >-
   worktree-isolated background agents to implement multiple pending features simultaneously.
   Each worker runs as a full independent session with all tools. This skill requires
   pending plans in .arness/plans/ — run arn-code-batch-planning first if none exist.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Arness Batch Implement
@@ -187,6 +187,53 @@ Do not retry more than once per feature. The goal is to recover from transient c
 
 **Worked example.** Say the batch has three features: `auth-service`, `api-endpoints`, `settings-page`. Step 4b succeeds for the first two but `settings-page` fails because `.git/worktrees/arn-batch-settings-page/` holds stale metadata from a manually-deleted worktree. Step 4c spawns parallel workers for `auth-service` and `api-endpoints`; Step 5 tracks them to completion. Step 6 then: prunes the stale metadata, retries `git worktree add` for `settings-page` (now succeeds), spawns ONE foreground worker, waits, records "done" in the Step 5 table. Total outcome: 3/3 succeed — parallel workers were never blocked by the stuck feature.
 
+### Step 6.5: Aggregate Findings
+
+After all workers (parallel + retried) have completed, parse each worker's final message for the report lines emitted in Step 8 of `worker-instructions.md`:
+
+- `LINT_FINDINGS: <errors>/<warnings>/<infos>` (skipped if the worker's `Linting:` was `none`/`skip`)
+- `UNRELATED_TESTS: <count>` (skipped if no testing tasks ran)
+- `TEST_FAILURES: <count> -- <summary>` (existing — already surfaced today)
+
+If a worker did not include one of these lines (older worker template, isolation failure, parsing failure), assume zeros for that worker and continue. Do not block aggregation on missing lines.
+
+Aggregate across workers. **If all totals are zero across all workers** (lint errors + warnings + infos = 0, unrelated tests = 0, test failures = 0), skip this step silently and proceed to Step 7.
+
+Otherwise present a findings table:
+
+```
+| Feature        | Lint (E/W/I) | Unrelated tests | Test failures |
+|----------------|--------------|-----------------|---------------|
+| auth-service   | 3/0/0        | 0               | 0             |
+| api-endpoints  | 0/2/0        | 1               | 0             |
+| settings-page  | 0/0/0        | 0               | 0             |
+| **Total**      | **3/2/0**    | **1**           | **0**         |
+```
+
+Determine the suggested default for the prompt:
+
+- Total lint errors > 0 OR test failures > 0 → suggest **Address now**
+- Otherwise (warnings/infos/unrelated only) → suggest **File a backlog issue and proceed**
+
+Then ask (using `AskUserQuestion`):
+
+> **Workers reported \<E\> lint errors, \<W\> warnings, \<I\> infos, \<U\> unrelated test failures, \<F\> hard test failures. Suggested: \<Address now | File a backlog issue and proceed\>. How would you like to proceed?**
+> 1. **Address now** — cancel batch-merge for now, fix issues per worktree (each worker's PR is already open), then re-run `/arn-code-batch-merge` when ready
+> 2. **File a backlog issue and proceed** — create one aggregated tracker issue with per-feature breakdown, then continue to Step 7
+> 3. **Proceed with documented reason** — continue to Step 7; rationale will be appended to PR descriptions when batch-merge runs
+
+Apply the choice:
+
+- **(1) Address now** — print each worker's worktree path (already known from Step 4: `$REPO/.claude/worktrees/arn-batch-<slug>`) so the user can `cd` in and fix issues. Do NOT invoke batch-merge. Exit cleanly.
+- **(2) File a backlog issue and proceed** — read `Issue tracker` from `## Arness`. Create the issue:
+  - For `github`: `gh issue create --title "Lint/test backlog from batch [N features]" --body "<aggregated table + per-feature breakdown of which reports contain the findings>"`
+  - For `jira`: use the Atlassian MCP server with the same title and body
+  - For `none`: warn the user that no issue tracker is configured and fall back to choice (3)
+  Then proceed to Step 7.
+- **(3) Proceed with documented reason** — prompt the user for a one-line rationale (free-form text, NOT `AskUserQuestion` — this is open-ended per CLAUDE.md "User Interaction Convention"). Store the rationale for use in Step 7. Proceed to Step 7.
+
+---
+
 ### Step 7: Handoff
 
 Ask (using `AskUserQuestion`):
@@ -195,5 +242,5 @@ Ask (using `AskUserQuestion`):
 > 1. Merge PRs
 > 2. Not yet
 
-- **Merge PRs** -- invoke `Skill: arn-code:arn-code-batch-merge`.
-- **Not yet** -- inform: "Run `/arn-code-batch-merge` when ready." Exit.
+- **Merge PRs** -- invoke `Skill: arn-code:arn-code-batch-merge`. If a rationale was captured in Step 6.5 (option 3 was chosen), pass it through so batch-merge can append "Lint/test exception: \<rationale\>" to each PR description.
+- **Not yet** -- inform: "Run `/arn-code-batch-merge` when ready." Exit. If a rationale was captured in Step 6.5, also note: "Findings rationale captured: \<rationale\>. Re-running `/arn-code-batch-merge` will not preserve this — pass it again at merge time if needed."

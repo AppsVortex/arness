@@ -20,7 +20,7 @@ description: >-
   Context: User wants to understand integration points for a feature
   user: "what files would I need to change to add caching?"
   </example>
-tools: [Read, Glob, Grep, LSP, WebSearch]
+tools: [Read, Glob, Grep, LSP, WebSearch, SendMessage]
 model: opus
 color: yellow
 ---

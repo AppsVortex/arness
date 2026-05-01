@@ -8,7 +8,7 @@ description: >-
   arn-reviewing-pr, arn-assessing, arn-code-feature-spec, arn-code-bug-spec,
   arn-code-swift, arn-code-standard) which read the ensure-config reference as
   Step 0 before proceeding with their workflow.
-version: 1.0.0
+version: 1.2.0
 ---
 
 # Arness Code Ensure Config

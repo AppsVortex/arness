@@ -9,7 +9,7 @@ description: >-
   task, use arn-code-execute-task instead. For Agent Teams mode, use
   arn-code-execute-plan-teams. Do NOT use this skill when executing a single task —
   use `/arn-code-execute-task` instead.
-version: 0.3.0
+version: 0.4.0
 ---
 
 # Arness Execute Plan
@@ -163,7 +163,25 @@ This step is automatic and non-blocking. If the refresh fails, execution is stil
 - **Project directory missing** -- suggest running `/arn-code-save-plan` to create the project structure
 - **No tasks in TaskList** -- suggest running `/arn-code-taskify` to convert TASKS.md into tasks
 - **Executor agent fails or crashes** -- read the agent's output to identify what went wrong, report the failure details to the user, offer to retry the task (respawn executor with the same context)
-- **Executor reports 3-attempt test failure on the same test** -- present the full failure details (test name, error output, files involved) to the user and ask whether to retry with more context, skip the failing task, or abort execution
+- **Executor reports test failures.** Branch on the executor's classification (from the implementation/testing report's `unrelatedTestFailures` array and any 3-attempt self-heal failures):
+
+  **Branch 1 — only `unrelatedTestFailures` reported (no 3-attempt self-heal failure):** the executor confirmed the failing tests are not related to the task's modified files. Show the full classification reasoning (test names, modified files checked, observed test imports). Then ask (using `AskUserQuestion`):
+
+  > **One or more pre-existing tests are failing but appear unrelated to this task. How would you like to proceed?**
+  > 1. **Address now** — pause this task, investigate and fix the failing tests
+  > 2. **File a backlog issue and continue** — record the failures as a tracked issue, mark task complete
+  > 3. **Continue with documented reason** — proceed without filing a backlog issue, annotate the task report
+
+  Apply the choice. For "File a backlog issue", create the issue on the configured platform (`gh issue create` for github, Jira MCP for jira; if Issue tracker is `none`, warn the user and fall back to "Continue with documented reason"). Use the failing test names + classification reasoning as the issue body.
+
+  **Branch 2 — executor reports a 3-attempt self-heal failure on a `related-or-uncertain` test (with or without additional `unrelatedTestFailures`):** present the full failure details (test name, error output, files involved). Then ask (using `AskUserQuestion`):
+
+  > **A test failure persists after 3 fix attempts. The failure may be related to this task. How would you like to proceed?**
+  > 1. **Retry with more context** — give the executor more guidance and try again
+  > 2. **Skip the failing task** — mark this task as incomplete and continue with the rest
+  > 3. **Abort execution** — stop the orchestrator now
+
+  If `unrelatedTestFailures` are also present, mention them briefly in the preamble so the user understands the full picture, but the user's choice here governs the orchestrator's next action on the related failure.
 - **Reviewer agent fails or crashes** -- report the failure to the user, offer two options: skip the review for this task (mark as completed without review) or retry the reviewer (respawn with the same context)
 - **Review cycle exceeds max retries (2)** -- present the accumulated review findings to the user with full context, ask the user to choose: retry with more context (user provides additional guidance), skip the task and continue, or abort execution entirely
 - **All remaining tasks blocked (circular dependencies)** -- this should have been caught by `arn-code-review-plan`; show the dependency graph (task IDs, names, and what each is blocked by) and ask the user to manually resolve by removing or reordering dependencies

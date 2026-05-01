@@ -210,13 +210,29 @@ Create a new commit with the updated CHANGE_RECORD.json and push via `git -C "$W
 
 ### 8. Report
 
-End your response with a report in exactly this format:
+End your response with a report in exactly this format. The orchestrator parses these lines deterministically — they MUST appear on their own lines, in the order shown, before the `PR:` line.
 
-If any tests failed after 3 retries, include a test failure line before the PR line:
+**Lint findings** (always emit if `Linting: enabled` in the project's `## Arness` block; OMIT this line entirely if `Linting: none` or `Linting: skip`):
+
+Read every report you wrote during this run (`reports/IMPLEMENTATION_REPORT_*.json` and `reports/TESTING_REPORT_*.json` under the plan directory). Sum each report's `lintFindings[]` entries by severity. Emit:
+
+`LINT_FINDINGS: <errors>/<warnings>/<infos>`
+
+Examples: `LINT_FINDINGS: 0/0/0` (clean), `LINT_FINDINGS: 3/12/0` (3 errors, 12 warnings).
+
+**Unrelated test failures** (always emit if at least one testing task ran during this worker; omit if no testing tasks executed):
+
+Sum `unrelatedTestFailures[]` entry counts across all `reports/TESTING_REPORT_*.json` produced during this run. Emit:
+
+`UNRELATED_TESTS: <count>`
+
+Examples: `UNRELATED_TESTS: 0` (none), `UNRELATED_TESTS: 2` (two pre-existing failing tests classified as unrelated to this feature's scope).
+
+**Hard test failures** (only if any test failed after 3 self-heal attempts on a `related-or-uncertain` classification — see executor self-heal rules):
 
 `TEST_FAILURES: <count> -- <brief summary of failures>`
 
-Then the PR line:
+**PR line** (always — last line of the report):
 
 `PR: <url>` -- if the PR was created successfully.
 
