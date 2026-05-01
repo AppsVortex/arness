@@ -35,7 +35,7 @@ description: >-
   docs, implements the task, and generates its report.
   </commentary>
   </example>
-tools: [Read, Glob, Grep, Edit, Write, Bash, LSP]
+tools: [Read, Glob, Grep, Edit, Write, Bash, LSP, SendMessage, TaskUpdate, TaskList, TaskGet]
 model: opus
 color: blue
 ---

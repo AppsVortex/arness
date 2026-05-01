@@ -36,7 +36,7 @@ description: >-
   are resolved and returns an updated verdict.
   </commentary>
   </example>
-tools: [Read, Glob, Grep, Write, Bash]
+tools: [Read, Glob, Grep, Write, Bash, SendMessage, TaskUpdate, TaskList, TaskGet]
 model: opus
 color: green
 ---

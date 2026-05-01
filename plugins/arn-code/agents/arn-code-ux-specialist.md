@@ -29,7 +29,7 @@ description: >-
   proposing a UI stack and component patterns from scratch.
   </commentary>
   </example>
-tools: [Read, Glob, Grep, LSP, WebSearch]
+tools: [Read, Glob, Grep, LSP, WebSearch, SendMessage]
 model: opus
 color: pink
 ---
