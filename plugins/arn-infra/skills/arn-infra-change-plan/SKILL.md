@@ -89,7 +89,7 @@ Options:
 
 If **Review**, skip to Step 4. If **Regenerate**, proceed.
 
-Invoke the `arn-infra-change-planner` agent via the Task tool with:
+Invoke the `arn-infra-change-planner` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 You are generating a phased infrastructure implementation plan for the following change specification.
@@ -167,7 +167,7 @@ Go to Step 4b.
 
 #### Step 4b: Iterate with Feedback
 
-Invoke a fresh `arn-infra-change-planner` agent via the Task tool with the current plan and user feedback:
+Invoke a fresh `arn-infra-change-planner` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context (the current plan and user feedback):
 
 ```text
 You are revising an existing infrastructure implementation plan based on user feedback.

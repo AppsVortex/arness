@@ -157,7 +157,7 @@ Options:
 
 ### Step 5: Invoke Specialist Agent for IaC Generation
 
-Invoke the `arn-infra-specialist` agent via the Task tool with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- APPLICATION CONTEXT ---
 [Application architecture from Step 3, or triage brief content from Step 2]
@@ -230,9 +230,9 @@ Run the validation ladder up to the configured validation ceiling. Each level bu
 
 **Level 2 -- Security Scan and Cost Estimation (if ceiling >= 2):**
 - Run `checkov` or `trivy` on the generated IaC if available
-- Invoke the `arn-infra-cost-analyst` agent for cost estimation:
+- Invoke the `arn-infra-cost-analyst` agent via the Task tool for cost estimation, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback):
 
-  Invoke the `arn-infra-cost-analyst` agent via the Task tool with:
+  Invoke the `arn-infra-cost-analyst` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
   --- INFRASTRUCTURE CODE ---
   [generated IaC files]

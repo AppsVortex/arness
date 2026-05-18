@@ -101,7 +101,7 @@ Also read the current product concept from `<vision-dir>/product-concept.md`. Ex
 
 ### Step 3: Invoke Product Strategist for Consolidation
 
-Invoke the `arn-spark-product-strategist` agent with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept content]
@@ -145,7 +145,7 @@ Check the product concept content for signals that the UX specialist was involve
 
 **If UX signals are detected:**
 
-Identify which recommendations in the consolidated changeset affect UX-relevant sections (Core Experience, visual direction, interaction patterns, onboarding flows, accessibility). If any exist, invoke `arn-spark-ux-specialist` with:
+Identify which recommendations in the consolidated changeset affect UX-relevant sections (Core Experience, visual direction, interaction patterns, onboarding flows, accessibility). If any exist, invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept content]

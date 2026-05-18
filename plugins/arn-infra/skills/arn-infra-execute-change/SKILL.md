@@ -122,7 +122,7 @@ Generate environment-specific variable files. Include resource tagging.
 
 > Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-execute-change/references/gate-policies.md` for security gate enforcement rules.
 
-Invoke the `arn-infra-security-auditor` agent to scan the generated IaC:
+Invoke the `arn-infra-security-auditor` agent via the Task tool to scan the generated IaC, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- IaC ARTIFACTS ---
@@ -151,7 +151,7 @@ Update PROGRESS_TRACKER.json: set `securityGate.status`.
 
 #### Step 2.4: Cost Gate (arn-infra-cost-analyst)
 
-Invoke the `arn-infra-cost-analyst` agent to estimate costs:
+Invoke the `arn-infra-cost-analyst` agent via the Task tool to estimate costs, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- IaC ARTIFACTS ---
@@ -192,7 +192,7 @@ Execute the deployment using the procedures from `deploy-procedures.md`. Follow 
 
 #### Step 2.6: Verification (arn-infra-verifier)
 
-Invoke the `arn-infra-verifier` agent to validate the deployment:
+Invoke the `arn-infra-verifier` agent via the Task tool to validate the deployment, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- DEPLOYED RESOURCES ---
@@ -215,7 +215,7 @@ Update PROGRESS_TRACKER.json: set `verification.status`.
 
 #### Step 2.7: Review Gate (arn-infra-change-reviewer)
 
-Invoke the `arn-infra-change-reviewer` agent for a phase-level review:
+Invoke the `arn-infra-change-reviewer` agent via the Task tool for a phase-level review, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- PHASE REPORT ---

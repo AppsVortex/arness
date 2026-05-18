@@ -179,7 +179,7 @@ Ready to generate, or want to adjust anything?"
 
 ### Step 5: Invoke Builder
 
-Invoke the `arn-spark-dev-env-builder` agent with:
+Invoke the `arn-spark-dev-env-builder` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 - Environment type and all specifics gathered in Step 4
 - Platform targets

@@ -74,7 +74,7 @@ If GitHub access is not available, offer an alternative: generate the diagnostic
 
 ### Step 4: Invoke arn-spark-doctor
 
-Spawn the `arn-spark-doctor` agent via the Task tool with:
+Spawn the `arn-spark-doctor` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The user's description of the issue
 - Project root path
 - `## Arness` config content (or "not configured")

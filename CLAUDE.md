@@ -41,6 +41,8 @@ When updating default report templates in `plugins/arn-code/skills/arn-code-save
 
 Checksums are generated at init-time by Claude (via `sha256sum` or `shasum -a 256`), not pre-computed in the repository.
 
+Agent model profile files (`.arness/agent-models/<plugin>.md`) follow the same versioning and update policy as report templates: each preset carries a `# Version:` header, ensure-config detects version drift on each invocation, and the project's `Template updates: ask | auto | manual` setting controls update behavior. User edits to the file (detected via checksum mismatch) auto-flip the corresponding `## Arness` profile field to `custom` so future preset updates do not overwrite user customizations. See "Agent Model Profiles" below for the field-level behavior.
+
 ## Plugin Component Conventions
 
 ### Skills (preferred for new functionality)
@@ -51,6 +53,16 @@ Checksums are generated at init-time by Claude (via `sha256sum` or `shasum -a 25
 ### Agents
 - Files: `plugins/<plugin>/agents/<agent-name>.md`
 - Frontmatter: `name`, `description` (with `<example>` blocks for triggers), `tools`, `model`, `color`
+
+### When adding a new agent
+
+Every new agent must be wired into both model profile presets so that users on either preset get a defined model assignment. Steps:
+
+1. Create the agent file at `plugins/<plugin>/agents/<agent-name>.md` with frontmatter (`model: opus`).
+2. Add the agent to BOTH `all-opus.md` and `balanced.md` presets in `plugins/<plugin>/skills/<plugin>-init/references/agent-models-presets/`. Decide the tier in `balanced` per the existing tiering principles (heavy reasoning → `opus`, operational/structured work → `sonnet`).
+3. Bump each preset's `# Version:` header (e.g., `1.0.0` → `1.1.0`).
+4. Bump the plugin version in the marketplace entry per the existing semver rules in the "Versioning" section below.
+5. If the new agent is invoked from any skill, that dispatch site must include the model lookup per the "Dispatch convention" in `plugins/<plugin>/skills/<plugin>-ensure-config/references/ensure-config.md`.
 
 ### User Interaction Convention
 - All discrete user choices (numbered options, yes/no decisions, multi-select menus) MUST use `Ask (using \`AskUserQuestion\`):` followed by the bold question text and numbered options
@@ -85,6 +97,26 @@ Each project's `## Arness` block carries a `Linting:` field with one of three va
 When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user with the same 3-option menu and, if `enabled` is chosen, invokes the codebase analyzer to generate `linting.md`.
 
 The analyzer is technology-agnostic: it does not pattern-match against a fixed list of tool names. Instead it scans evidence categories (dependency manifests, tool config files, script entry points, pre-commit-style runners) and recognizes whatever tooling the project actually uses. Linters and formatters are listed separately in `linting.md` because they have different semantics — formatters typically have both a check mode and a write mode, and the gate must invoke the check mode (`Discovered check command`) so files are never silently rewritten.
+
+## Agent Model Profiles
+
+Each plugin's subagents can run under a user-selectable model profile, letting cost-sensitive users opt out of all-Opus invocation without forking the plugin. The choice is per-plugin and editable.
+
+Each project's `## Arness` block carries one field per installed plugin:
+
+- **Code agent model profile:** `all-opus | balanced | custom`
+- **Spark agent model profile:** `all-opus | balanced | custom`
+- **Infra agent model profile:** `all-opus | balanced | custom`
+
+Semantics:
+
+- **`all-opus`** — every subagent runs on Opus. Default for new projects; preserves current behavior.
+- **`balanced`** — Opus for heavy reasoning agents (planners, architects, reviewers); Sonnet for operational/structured agents (executors, scaffolders, dispatch helpers). Per-agent assignments live in `.arness/agent-models/<plugin>.md`.
+- **`custom`** — the project's `.arness/agent-models/<plugin>.md` has been hand-edited. Set automatically when ensure-config detects a checksum mismatch against the named preset; future preset updates skip the file so customizations are preserved.
+
+The three fields are independent — only the plugins a user has installed need a corresponding field. Default is `all-opus`. The active per-agent model assignments live in `.arness/agent-models/<plugin>.md`, copied at init-time from `plugins/<plugin>/skills/<plugin>-init/references/agent-models-presets/<choice>.md`. Each dispatch site reads this file and passes the resolved model as the Task tool's `model:` parameter, overriding the agent's frontmatter.
+
+Updates flow through the same checksum + version + `Template updates: ask | auto | manual` policy as report templates (see "Template Management" above). When a plugin ships a new preset version, ensure-config compares the project's stored version against the plugin version and either auto-updates, prompts, or skips per the user's policy. Hand-editing `.arness/agent-models/<plugin>.md` flips the corresponding profile field to `custom` so subsequent preset bumps do not clobber the edits.
 
 ## Testing Locally as a Plugin
 

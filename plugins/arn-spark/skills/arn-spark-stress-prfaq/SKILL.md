@@ -72,7 +72,7 @@ Read the product concept from `<vision-dir>/product-concept.md`. Extract:
 
 ### Step 3: Phase 1 -- Draft
 
-Invoke `arn-spark-marketing-pm` in **draft mode** with:
+Invoke the `arn-spark-marketing-pm` agent in **draft mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept document]
@@ -104,7 +104,7 @@ If the draft is too thin or generic, retry with more specific context:
 
 ### Step 4: Phase 2 -- Critique
 
-Invoke `arn-spark-marketing-pm` in **critique mode** with:
+Invoke the `arn-spark-marketing-pm` agent in **critique mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept document -- same as Phase 1]

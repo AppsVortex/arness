@@ -224,7 +224,7 @@ For each layer:
 
 3. Determine the spike workspace: `[spikes-dir]/visual-strategy-spike-layer-[N]/`
 
-4. Invoke the `arn-spark-visual-test-engineer` agent (foreground, not background) with:
+4. Invoke the `arn-spark-visual-test-engineer` agent via the Task tool (foreground, not background), passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - Stack details (application type, framework, rendering context)
    - Layer specification (what approach to validate)
    - Environment constraints
@@ -260,7 +260,7 @@ The spike must validate journey readiness in addition to the standard Layer 2 sp
 
 ### Step 5: Generate Production Scripts
 
-After validating layers, invoke `arn-spark-visual-test-engineer` again (foreground) with:
+After validating layers, invoke the `arn-spark-visual-test-engineer` agent again (foreground) via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Validated layer specifications and spike results
 - Full baseline image set (all screens, not just the POC subset)
 - Project structure and build configuration
@@ -276,7 +276,7 @@ Present the scripts to the user before writing to the project.
 
 ### Step 6: Set Up Baseline Images
 
-Invoke `arn-spark-visual-test-engineer` (foreground) with:
+Invoke the `arn-spark-visual-test-engineer` agent (foreground) via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Prototype screenshot locations (from Step 3)
 - Baseline directory path (e.g., `visual-tests/baselines/`)
 - Naming convention from the capture script

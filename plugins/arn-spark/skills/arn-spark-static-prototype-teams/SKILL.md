@@ -240,7 +240,7 @@ For each cycle:
 
 #### 5a: Build
 
-Invoke the `arn-spark-prototype-builder` agent with:
+Invoke the `arn-spark-prototype-builder` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Showcase mode:** true
 - **Style brief:** toolkit configuration section
 - **Component list:** components from the criteria + style brief
@@ -255,7 +255,7 @@ Mark the Build task as in_progress before invoking, completed after.
 
 #### 5b: Capture Screenshots
 
-Invoke the `arn-spark-style-capture` agent with:
+Invoke the `arn-spark-style-capture` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **URL:** the URL serving the showcase (from the running prototype)
 - **Output path:** `prototypes/static/v[N]/screenshots/`
 
@@ -388,7 +388,7 @@ Mark the Debate review task as in_progress before Phase 1, completed after all p
 
 ### Step 6: Judge Review
 
-Invoke the `arn-spark-ux-judge` agent with:
+Invoke the `arn-spark-ux-judge` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Review mode:** `static` -- the judge reviews screenshots and files (there is nothing interactive to navigate in a static showcase)
 - **Prototype artifacts:** paths to the latest version's showcase files and screenshots
 - **Criteria list:** from `prototypes/criteria.md`

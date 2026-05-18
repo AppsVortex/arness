@@ -115,7 +115,7 @@ If multi-service or compose is needed:
 
 > Read the local override or plugin default for `compose-patterns.md`.
 
-Invoke the `arn-infra-specialist` agent via the Task tool with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- APPLICATION CONTEXT ---
 Technology stack: [language, framework, runtime version]
@@ -167,7 +167,7 @@ Load the security checklist:
 
 > Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-containerize/references/container-security-checklist.md` for container security requirements.
 
-Invoke the `arn-infra-security-auditor` agent via the Task tool with:
+Invoke the `arn-infra-security-auditor` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- FILES TO AUDIT ---
 [generated Dockerfile content(s)]

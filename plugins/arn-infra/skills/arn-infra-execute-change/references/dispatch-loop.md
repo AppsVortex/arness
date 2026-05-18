@@ -30,7 +30,7 @@ Before any changes, create a rollback checkpoint.
 
 ### Step 2: IaC Generation (arn-infra-specialist)
 
-Invoke the `arn-infra-specialist` agent with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- PHASE PLAN ---
@@ -62,7 +62,7 @@ with: environment, project, managed-by=arn-infra, phase=N.
 
 ### Step 3: Security Gate (arn-infra-security-auditor)
 
-Invoke the `arn-infra-security-auditor` agent with:
+Invoke the `arn-infra-security-auditor` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- IaC ARTIFACTS ---
@@ -90,7 +90,7 @@ CRITICAL, HIGH, MEDIUM, LOW. Check for:
 
 ### Step 4: Cost Gate (arn-infra-cost-analyst)
 
-Invoke the `arn-infra-cost-analyst` agent with:
+Invoke the `arn-infra-cost-analyst` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- IaC ARTIFACTS ---
@@ -126,7 +126,7 @@ Execute deployment using procedures from `deploy-procedures.md`:
 
 ### Step 6: Verification (arn-infra-verifier)
 
-Invoke the `arn-infra-verifier` agent with:
+Invoke the `arn-infra-verifier` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- DEPLOYED RESOURCES ---
@@ -150,7 +150,7 @@ Report PASS/WARN/FAIL verdict.
 
 ### Step 7: Review Gate (arn-infra-change-reviewer)
 
-Invoke the `arn-infra-change-reviewer` agent with:
+Invoke the `arn-infra-change-reviewer` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- PHASE REPORT ---

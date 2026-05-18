@@ -293,7 +293,7 @@ Wait for the user's feedback. The user may:
 
 When the user has selected a final direction:
 
-1. **Capture screenshots:** Invoke the `arn-spark-style-capture` agent with:
+1. **Capture screenshots:** Invoke the `arn-spark-style-capture` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - URLs: the localhost URLs of each screen in the selected proposal (from the proposal's `proposal-manifest.json`)
    - Output path: `[visual-grounding]/designs/`
    - File naming: `visual-sketch-[screen-name].png` (e.g., `visual-sketch-dashboard.png`)

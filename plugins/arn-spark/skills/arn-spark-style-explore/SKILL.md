@@ -136,7 +136,7 @@ Options:
 | Hand-drawn wireframes | User provides photos → save to `[visual-grounding]/designs/` |
 | Brand assets (logos, guidelines) | User provides files → save to `[visual-grounding]/brand/` |
 
-**If the user provides one or more URLs:** Invoke the `arn-spark-style-capture` agent with the URLs and save screenshots to the visual grounding directory (under `references/`). If the agent reports Playwright is not available, inform the user:
+**If the user provides one or more URLs:** Invoke the `arn-spark-style-capture` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with the URLs and save screenshots to the visual grounding directory (under `references/`). If the agent reports Playwright is not available, inform the user:
 
 "Playwright is not installed in this environment, so I cannot automatically capture that URL. You can either:
 1. Install Playwright (`npm install -D playwright && npx playwright install chromium`) and try again
@@ -147,7 +147,7 @@ If capture succeeds, use the agent's extracted design characteristics (colors, t
 
 ### Step 2: Initial Style Proposal
 
-Invoke the `arn-spark-ux-specialist` agent (greenfield agent) with:
+Invoke the `arn-spark-ux-specialist` agent (greenfield agent) via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 - The user's style description or preferences
 - Product concept context (target users, product personality)

@@ -173,7 +173,7 @@ See the arn-code-sketch-builder agent Step 6 for the full schema including `comp
 
 ### Step 5: Spawn the Builder Agent
 
-Spawn the `arn-code-sketch-builder` agent with:
+Spawn the `arn-code-sketch-builder` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- SKETCH CONTEXT ---
 **Feature:** [feature name and description]

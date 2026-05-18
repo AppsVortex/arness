@@ -120,7 +120,7 @@ The interview skill uses the following process to generate cast personas:
 
 1. **Read persona moulds** from the product concept's Target Personas section
 2. **Select 3 moulds** (or use all if 3 or fewer exist). If more than 3 moulds exist, select the 3 that are most diverse in their adoption posture and technical sophistication.
-3. **For each mould, invoke `arn-spark-persona-architect` in instantiation mode** with:
+3. **For each mould, invoke the `arn-spark-persona-architect` agent in instantiation mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - The mould definition (abstracted profile)
    - The casting overlay specification (from this document)
    - The product concept summary (for domain grounding)

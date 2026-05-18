@@ -160,7 +160,7 @@ When Agent Teams is not enabled, the skill simulates the debate with 3 sequentia
 
 **Invocation 1 -- Product Strategist Phase 1:**
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Journey screenshots from interaction testing step
 - Interaction report from `arn-spark-ui-interactor`
 - All criteria with descriptions, scoring scale, and threshold
@@ -171,7 +171,7 @@ Invoke `arn-spark-product-strategist` with:
 
 **Invocation 2 -- UX Specialist Phase 1 + Phase 2 Combined:**
 
-Invoke `arn-spark-ux-specialist` with:
+Invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Same inputs as Invocation 1
 - The strategist's file path to read: `prototypes/clickable/reviews/round-N-strategist-review.md`
 - File path to write to: `prototypes/clickable/reviews/round-N-ux-review.md`
@@ -179,7 +179,7 @@ Invoke `arn-spark-ux-specialist` with:
 
 **Invocation 3 -- Product Strategist Phase 2:**
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The UX specialist's file path to read: `prototypes/clickable/reviews/round-N-ux-review.md`
 - Expert interaction review template path
 - File path to write to: `prototypes/clickable/reviews/round-N-strategist-cross-review.md`

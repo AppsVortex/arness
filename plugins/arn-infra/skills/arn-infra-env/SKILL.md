@@ -162,7 +162,7 @@ Based on the IaC tool, generate environment-specific configuration files:
 | Kubernetes | `environments/<env>/kustomization.yaml` or `values-<env>.yaml` | Kustomize overlays or Helm value overrides |
 | PaaS (none) | Platform-native env config | Environment-specific sections in `fly.toml`, `vercel.json` |
 
-Invoke the `arn-infra-specialist` agent via the Task tool with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- ENVIRONMENT CONTEXT ---
 Environments: [list in promotion order]

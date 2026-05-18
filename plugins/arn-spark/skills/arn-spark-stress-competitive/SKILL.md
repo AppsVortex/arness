@@ -71,7 +71,7 @@ Build the initial competitor list from the competitive landscape section of the 
 
 ### Step 3: Deep Competitive Research
 
-Invoke `arn-spark-market-researcher` in **deep-analysis mode** with:
+Invoke the `arn-spark-market-researcher` agent in **deep-analysis mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT (relevant sections) ---
 [Extract and pass: Vision, Core Experience, Product Pillars, Competitive Landscape, Scope Boundaries, Target Platforms. Do not pass the full document — focus on sections relevant to competitive analysis.]

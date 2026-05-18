@@ -41,7 +41,7 @@ Extract:
 
 ### Step 1: Scan for Existing Secrets Patterns
 
-Invoke the `arn-infra-security-auditor` agent via the Task tool with:
+Invoke the `arn-infra-security-auditor` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- FILES TO AUDIT ---
 Scan the entire project for secrets patterns:

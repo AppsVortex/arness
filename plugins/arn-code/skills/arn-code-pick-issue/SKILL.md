@@ -237,7 +237,7 @@ After the user has reviewed the issue details and agent assessment, offer option
 
 For brand-new issues with no prior feature file or spec, there is nothing to drift against — skip directly to Step 7.
 
-When the gate applies, spawn the `arn-code-drift-detector` agent via the Task tool with the existing feature file (or sub-feature spec) as the input spec:
+When the gate applies, spawn the `arn-code-drift-detector` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context (the existing feature file or sub-feature spec is the input spec):
 
 ```
 Verify whether the following feature file / spec still aligns with the current codebase.

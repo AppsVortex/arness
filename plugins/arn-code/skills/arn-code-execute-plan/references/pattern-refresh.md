@@ -19,7 +19,7 @@ Automatic post-implementation refresh of stored pattern documentation. After imp
    - If **none exist** AND this **is** a catch-up context: invoke the `arn-code-codebase-analyzer` agent with full analysis mode to generate pattern docs from scratch. Write the output to the Code patterns directory. Print: "Pattern documentation generated from scratch." Return.
    - If **at least one exists**: proceed to step 3.
 
-3. **Invoke the `arn-code-codebase-analyzer` agent** with full analysis mode. Pass the current Code patterns directory path and instruct the agent to analyze the full codebase for patterns, architecture, and testing conventions.
+3. **Invoke the `arn-code-codebase-analyzer` agent via the Task tool**, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with full analysis mode. Pass the current Code patterns directory path and instruct the agent to analyze the full codebase for patterns, architecture, and testing conventions.
 
 4. **Compare fresh analysis against stored pattern files.** Identify:
    - **New patterns** -- patterns found in the analysis that do not appear in stored docs

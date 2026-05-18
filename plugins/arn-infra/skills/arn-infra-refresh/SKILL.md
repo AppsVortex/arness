@@ -134,7 +134,7 @@ For each file in the selected categories:
 1. Read the current content of the local override file from the **Reference overrides** path. If the file is missing, copy it from the plugin default (`${CLAUDE_PLUGIN_ROOT}/skills/<source-path-from-manifest>`) before proceeding, and record the copy in `.reference-checksums.json` with `updatedBy: "init"`.
 2. Read the research strategy for the file's category from `research-strategies.md`
 
-Invoke the `arn-infra-reference-researcher` agent via the Task tool with:
+Invoke the `arn-infra-reference-researcher` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- CURRENT FILE CONTENT ---

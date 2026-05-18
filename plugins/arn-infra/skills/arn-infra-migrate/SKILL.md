@@ -117,7 +117,7 @@ Based on the chosen scenario:
 
 #### 4.1: Generate Migration Plan
 
-Invoke the `arn-infra-specialist` agent via the Task tool with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- MIGRATION CONTEXT ---
 Scenario: [graduate | provider-migration | consolidation | partial]
@@ -139,7 +139,7 @@ Generate a migration plan covering:
 
 #### 4.2: Get Cost Comparison
 
-Invoke the `arn-infra-cost-analyst` agent via the Task tool with:
+Invoke the `arn-infra-cost-analyst` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- COST CONTEXT ---
 Source infrastructure: [current provider resources and costs]
@@ -246,7 +246,7 @@ Execute migration steps incrementally. For each task:
 
 Adapt IaC generation instructions to experience level (beginner: simplified configs with comments, expert: production-ready with minimal comments).
 
-Invoke the `arn-infra-specialist` agent to generate IaC for the target provider/service. Follow the same patterns as `arn-infra-define`: invoke the `arn-infra-specialist` agent via the Task tool with the target provider's IaC tool and patterns reference, scoped to the specific migration task.
+Invoke the `arn-infra-specialist` agent to generate IaC for the target provider/service. Follow the same patterns as `arn-infra-define`: invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with the target provider's IaC tool and patterns reference, scoped to the specific migration task.
 
 **6.2: Deploy to staging**
 

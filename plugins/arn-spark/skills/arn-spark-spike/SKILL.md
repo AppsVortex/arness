@@ -103,7 +103,7 @@ Wait for user approval or adjustments before running each spike. The user may wa
 
 For each approved spike, in order:
 
-1. Invoke the `arn-spark-spike-runner` agent (foreground, not background) with:
+1. Invoke the `arn-spark-spike-runner` agent via the Task tool (foreground, not background), passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - Risk description and context
    - Validation criteria
    - Project context (stack, existing scaffold location)

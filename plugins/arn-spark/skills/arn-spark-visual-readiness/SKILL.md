@@ -144,7 +144,7 @@ For each qualifying layer:
 
 2. Determine the spike workspace: `[spikes-dir]/visual-readiness-spike-layer-[N]/`
 
-3. Invoke the `arn-spark-visual-test-engineer` agent (foreground, not background) with:
+3. Invoke the `arn-spark-visual-test-engineer` agent via the Task tool (foreground, not background), passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - Layer specification (name, capture approach, environment, scripts)
    - Stack details from the strategy document
    - Environment constraints
@@ -187,7 +187,7 @@ For each deferred layer that was validated (Validated or user-approved Partially
    a. Update the layer's `**Interaction:**` field from `static` to `journey` in CLAUDE.md
    b. Add `**Journey manifest:**` field with path `<baselines-dir>/layer-2/journey-manifest.json`
    c. Add `**Journey runner:**` field with path `scripts/journey-runner.<ext>` (`.ps1` for Windows, `.swift` or `.applescript` for macOS)
-   d. Invoke `arn-spark-visual-test-engineer` agent with:
+   d. Invoke the `arn-spark-visual-test-engineer` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
       - Journey schema reference: `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-visual-strategy/references/journey-schema.md`
       - Journey manifest output path: the path from step (b)
       - Target platform: detected from the layer's `**Environment:**` field

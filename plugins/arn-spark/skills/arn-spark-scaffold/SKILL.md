@@ -132,7 +132,7 @@ Record all UI toolkit decisions for the scaffolder.
 
 ### Step 3: Invoke Scaffolder
 
-Invoke the `arn-spark-scaffolder` agent with:
+Invoke the `arn-spark-scaffolder` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 - All stack decisions from Step 1 (framework, UI, build, package manager, test, linter)
 - All UI toolkit decisions from Step 2 (CSS framework, component library, icon library)

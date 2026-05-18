@@ -164,7 +164,7 @@ When Agent Teams is not enabled, the skill simulates the debate with 3 sequentia
 
 **Invocation 1 — Business Reviewer Phase 1:**
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - All use case content (read each file and provide the content)
 - Product concept for context
 - Actor catalog
@@ -177,7 +177,7 @@ The strategist writes its Phase 1 review to the file.
 
 **Invocation 2 — Flow Reviewer Phase 1 + Phase 2 Combined:**
 
-Invoke `arn-spark-ux-specialist` with:
+Invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - All use case content
 - Product concept for context
 - Existing prototype screens (if available)
@@ -191,7 +191,7 @@ The UX specialist reads the business review file and writes its combined review 
 
 **Invocation 3 — Business Reviewer Phase 2:**
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The flow reviewer's file path to read: `[use-cases-dir]/reviews/round-N-flow-review.md`
 - Expert review template path: `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-use-cases/references/expert-review-template.md`
 - File path to write to: `[use-cases-dir]/reviews/round-N-business-cross-review.md`

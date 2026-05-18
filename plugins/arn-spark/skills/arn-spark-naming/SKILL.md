@@ -69,7 +69,7 @@ If resume: read the brief, detect which sections contain "-- Pending --" or are 
 
 ## Step 1: Strategic Foundation (Brand DNA)
 
-Invoke `arn-spark-brand-strategist` in `brand-dna` mode with:
+Invoke the `arn-spark-brand-strategist` agent in `brand-dna` mode via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Product context (from product-concept.md or user input)
 - Competitive landscape (from product concept, or agent will research via WebSearch)
 - Target market
@@ -126,7 +126,7 @@ Update `naming-brief.md` with Creative Sprint Results section (generation stats,
 Load the scoring methodology:
 > Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-naming/references/naming-methodology.md`
 
-Invoke `arn-spark-brand-strategist` in `scoring` mode with: full candidate list, user-starred favorites, dead directions.
+Invoke the `arn-spark-brand-strategist` agent in `scoring` mode via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context: full candidate list, user-starred favorites, dead directions.
 
 **Pass 1:** Agent filters 200+ candidates to 30-40 by removing obvious duds (unpronounceable, too long, too similar, offensive, dead directions). User-starred names always survive Pass 1.
 
@@ -193,7 +193,7 @@ Load trademark database reference:
 
 ### 4c — Linguistic Screening
 
-Invoke `arn-spark-brand-strategist` in `linguistic-screening` mode with: finalist names, target market, relevant languages (mapped from target market per the agent's language mapping).
+Invoke the `arn-spark-brand-strategist` agent in `linguistic-screening` mode via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context: finalist names, target market, relevant languages (mapped from target market per the agent's language mapping).
 
 The agent checks each name for: negative meanings, phonetic conflicts, cultural associations, and slang issues. Uses WebSearch for verification of uncertain findings.
 

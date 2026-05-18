@@ -75,7 +75,7 @@ If the issue does not follow the template format:
 
 ### Step 3: Invoke the Request Analyzer Agent
 
-Invoke the `arn-infra-request-analyzer` agent via the Task tool with:
+Invoke the `arn-infra-request-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- ISSUE CONTEXT ---

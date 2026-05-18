@@ -73,7 +73,7 @@ Read the product concept from `<vision-dir>/product-concept.md`. Extract:
 
 Select 3 persona moulds from the product concept. If more than 3 moulds exist, select the 3 most diverse in adoption posture and technical sophistication.
 
-For each mould, invoke `arn-spark-persona-architect` in **instantiation mode** with:
+For each mould, invoke the `arn-spark-persona-architect` agent in **instantiation mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PERSONA MOULD ---
 [full abstracted profile from product concept]
@@ -106,7 +106,7 @@ Run interviews in 3 waves. Each wave runs one phase for all 3 personas in parall
 
 Run all 3 personas' Phase 1 interviews in parallel. For each persona in parallel:
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept]
@@ -120,7 +120,7 @@ Phase 1 goal: formulate 2-3 questions that probe problem recognition without rev
 [full cast persona profile]
 --- END PERSONA PROFILE ---
 
-Then invoke `arn-spark-persona-impersonator` with:
+Then invoke the `arn-spark-persona-impersonator` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PERSONA PROFILE ---
 [full cast persona profile]
@@ -170,7 +170,7 @@ Record the full response for each persona.
 
 ### Step 5: Synthesize Findings
 
-After all 9 interviews are complete, invoke `arn-spark-product-strategist` with:
+After all 9 interviews are complete, invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept]

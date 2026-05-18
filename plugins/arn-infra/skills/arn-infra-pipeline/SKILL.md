@@ -116,7 +116,7 @@ Load the security checklist:
 
 ### Step 4: Invoke Pipeline Builder Agent
 
-Invoke the `arn-infra-pipeline-builder` agent via the Task tool with:
+Invoke the `arn-infra-pipeline-builder` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PLATFORM CONTEXT ---
 CI/CD platform: [github-actions | gitlab-ci | bitbucket-pipelines]
@@ -188,7 +188,7 @@ Verify that the pipeline builder agent returned at least one pipeline configurat
 
 ### Step 5: Invoke Security Auditor for Pipeline Review
 
-Invoke the `arn-infra-security-auditor` agent via the Task tool with:
+Invoke the `arn-infra-security-auditor` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- FILES TO AUDIT ---
 [Generated pipeline configuration files from Step 4]

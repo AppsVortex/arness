@@ -190,7 +190,7 @@ Options:
 
 ### Step 6: Generate Monitoring IaC
 
-Invoke the `arn-infra-specialist` agent via the Task tool with:
+Invoke the `arn-infra-specialist` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- MONITORING CONTEXT ---
 Observability stack: [chosen stack]

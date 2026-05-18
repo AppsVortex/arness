@@ -241,7 +241,7 @@ For each cycle:
 
 #### 4a: Build
 
-Invoke the `arn-spark-prototype-builder` agent with:
+Invoke the `arn-spark-prototype-builder` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Screen list:** with descriptions and navigation flow
 - **Style brief:** toolkit configuration section
 - **UI framework and component library:** from architecture vision or the project's dependency configuration
@@ -261,7 +261,7 @@ Start the prototype so it can be interacted with:
 3. Wait for it to be ready (e.g., poll a URL for web-based prototypes, wait for the process to report ready)
 4. Note the process ID for cleanup
 
-Then invoke the `arn-spark-ui-interactor` agent with:
+Then invoke the `arn-spark-ui-interactor` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Prototype URL or access point:** how to reach the running prototype (e.g., a URL for web-based, or launch instructions for native)
 - **User journey definitions:** the journeys agreed in Step 1b/Step 2
 - **Output path:** `prototypes/clickable/v[N]/journeys/`
@@ -312,7 +312,7 @@ Start the prototype for the judge's interactive review using the same procedure 
 
 If the prototype fails to start, fall back to invoking the judge in `static` mode using the journey screenshots from the latest Step 4b cycle. Note the limitation in the final report.
 
-Once the prototype is running, invoke the `arn-spark-ux-judge` agent with:
+Once the prototype is running, invoke the `arn-spark-ux-judge` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Review mode:** `interactive` -- the judge navigates the prototype firsthand rather than reviewing static screenshots
 - **Prototype URL or access point:** how to reach the running prototype
 - **Criteria list:** from `prototypes/criteria.md`

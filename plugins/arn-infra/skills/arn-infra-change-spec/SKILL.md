@@ -134,7 +134,7 @@ Using the change description (from Step 2a or 2b), perform initial analysis:
 
 **If application context is available** (the change is driven by an application feature, or cross-project artifacts exist):
 
-Invoke the `arn-infra-request-analyzer` agent via the Task tool with:
+Invoke the `arn-infra-request-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```text
 --- CHANGE CONTEXT ---

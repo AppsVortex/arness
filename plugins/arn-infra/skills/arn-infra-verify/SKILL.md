@@ -108,7 +108,7 @@ If the user provides URLs manually, proceed with those as the expected state.
 
 > Read the local override or plugin default for `health-check-patterns.md`.
 
-Invoke the `arn-infra-verifier` agent via the Task tool with:
+Invoke the `arn-infra-verifier` agent via the Task tool, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- EXPECTED STATE ---
 Resources: [filtered resource manifest for the target environment]

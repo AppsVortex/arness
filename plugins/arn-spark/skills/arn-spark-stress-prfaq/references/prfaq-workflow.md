@@ -21,7 +21,7 @@ Produce a genuinely compelling press release and FAQ that represents the best po
 
 ### Agent Invocation
 
-Invoke `arn-spark-marketing-pm` in **draft mode** with:
+Invoke the `arn-spark-marketing-pm` agent in **draft mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Full product concept
 - Product pillars (to anchor messaging)
 - Operating mode: `draft`
@@ -72,7 +72,7 @@ Adversarially evaluate the draft to find every place where the messaging makes a
 
 ### Agent Invocation
 
-Invoke `arn-spark-marketing-pm` in **critique mode** with:
+Invoke the `arn-spark-marketing-pm` agent in **critique mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Full product concept (same as Phase 1)
 - Product pillars (same as Phase 1)
 - Operating mode: `critique`

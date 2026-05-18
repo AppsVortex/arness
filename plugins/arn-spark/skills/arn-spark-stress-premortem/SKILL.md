@@ -72,7 +72,7 @@ Read the product concept from `<vision-dir>/product-concept.md`. Extract:
 
 ### Step 3: Invoke Forensic Investigator
 
-Invoke `arn-spark-forensic-investigator` with:
+Invoke the `arn-spark-forensic-investigator` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 --- PRODUCT CONCEPT ---
 [full product concept document]

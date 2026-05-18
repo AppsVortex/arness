@@ -6,7 +6,7 @@ Reference for agent invocation during the arn-infra-assess workflow.
 
 ## arn-infra-request-analyzer (Mode B: Full Application Analysis)
 
-Invoke the `arn-infra-request-analyzer` agent in Mode B with the following structured prompt:
+Invoke the `arn-infra-request-analyzer` agent via the Task tool in Mode B, passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with the following structured prompt:
 
 --- APPLICATION CONTEXT ---
 [codebase patterns content]

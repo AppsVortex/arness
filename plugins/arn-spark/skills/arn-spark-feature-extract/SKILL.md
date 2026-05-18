@@ -110,7 +110,7 @@ Note which artifacts were available and which were missing. Present the artifact
 
 ### Step 2: Extract Features with Experts
 
-Invoke the `arn-spark-product-strategist` agent with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 - All loaded artifacts
 - Request to extract and categorize features from the artifacts
@@ -130,7 +130,7 @@ The agent returns:
 - Scope observations (features that might be scope creep, features that seem missing)
 - Sizing warnings (features that seem too large or too thin)
 
-Then invoke `arn-spark-ux-specialist` with:
+Then invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 - The product strategist's feature list
 - User journey definitions and journey screenshots from the clickable prototype
@@ -177,12 +177,12 @@ After merging both expert outputs, scan for gaps -- areas where the consolidated
    - What each expert said (or didn't say) about it
    - Why it matters for downstream spec writing
 
-2. Invoke `arn-spark-product-strategist` with:
+2. Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - The gap summary
    - The full consolidated feature list for context
    - Instruction: "For each gap, propose a solution or alternative from the product perspective. Consider: should the feature be deferred, split, merged, or redefined? What is the minimal viable scope? If journey coverage is missing, which journeys should the feature map to?"
 
-3. Invoke `arn-spark-ux-specialist` with:
+3. Invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - The gap summary
    - The product strategist's proposed solutions
    - The full consolidated feature list

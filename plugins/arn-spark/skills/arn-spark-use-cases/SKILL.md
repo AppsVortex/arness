@@ -108,13 +108,13 @@ Load the product concept and perform an initial extraction of actors and use cas
 
 #### 2b: Expert Use Case Discovery
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The product concept document
 - The initial actor and use case extraction from Step 2a
 - Product pillars (if present in the product concept)
 - Instructions: "Review this initial actor and use case catalog from a business perspective. Identify: (1) Missing actors — are there stakeholders, external systems, or participant roles not captured? (2) Missing use cases — are there business processes, capabilities described in the product concept, or product pillar implications that do not have a corresponding use case? (3) Priority concerns — are any use cases mislabeled as must-have or should-have? (4) Scope concerns — are any proposed use cases out of scope for v1? Do not draft use case details — just identify what is missing or needs adjustment. Return a list of suggested additions and corrections."
 
-Then invoke `arn-spark-ux-specialist` with:
+Then invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The product concept document
 - The initial actor and use case extraction from Step 2a
 - Existing prototype screens (if available)
@@ -187,7 +187,7 @@ Draft use cases in parallel by invoking multiple `arn-spark-use-case-writer` age
 - **Existing prototype screens (if any):** paths to prototype directories
 - **Architecture vision (if available):** for system capability context
 
-After all parallel writers complete, invoke one final `arn-spark-use-case-writer` with:
+After all parallel writers complete, invoke one final `arn-spark-use-case-writer` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Index template:** `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-use-cases/references/use-case-index-template.md`
 - **Output directory:** `use-cases/`
 - **Product concept:** document path
@@ -203,7 +203,7 @@ Read the review protocol for the team process:
 
 Create the `[use-cases-dir]/reviews/` directory if it does not exist.
 
-Invoke `arn-spark-product-strategist` with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - All drafted use case content (read each file and provide the content)
 - Product concept for context
 - Actor catalog
@@ -215,7 +215,7 @@ After the strategist completes, read the review file at the specified path to ex
 
 ### Step 5: UX Specialist Review (Batch)
 
-Invoke `arn-spark-ux-specialist` with:
+Invoke the `arn-spark-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - All drafted use case content
 - Product concept for context
 - Existing prototype screens (if available)
