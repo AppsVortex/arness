@@ -96,7 +96,12 @@ Store the choice for the execution session.
 
    Note: Extract only the top-level fields (implicit Layer 1). Do NOT parse `#### Layer N:` subsections — multi-layer visual validation runs during `/arn-code-review-implementation`, not per-task.
 
-5. Spawn `arn-code-task-executor` via the Task tool with full context:
+5. **Determine the executor model.** First check the per-phase upgrade override:
+   - Read PROGRESS_TRACKER.json. Find the phase entry whose `implementation.taskId` matches the current task ID.
+   - If `phase.implementation.modelOverride` is non-null (e.g., `"opus"`), use that value as the `model` parameter for this dispatch. Skip the standard agent-models lookup. Emit a one-line status to the user: `Phase <N> (<phaseTitle>) executor model: <override> (upgraded — complex phase per pipeline.complex-phase-upgrade)`.
+   - If `phase.implementation.modelOverride` is null or the field is missing, fall through to the standard lookup: pass the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
+
+   Then spawn `arn-code-task-executor` via the Task tool with the determined model. Full context:
    - Task ID and full task description
    - Project name: `<PROJECT_NAME>`
    - Project folder path: `<plans-dir>/<PROJECT_NAME>/`
@@ -117,7 +122,7 @@ Store the choice for the execution session.
    - Report file path(s)
    - List of files created and modified
    - Visual capture directory path (if reported)
-2. Spawn `arn-code-task-reviewer` via the Task tool with:
+2. Spawn `arn-code-task-reviewer` via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - Task ID and full task description
    - Project name and folder path
    - INTRODUCTION.md path

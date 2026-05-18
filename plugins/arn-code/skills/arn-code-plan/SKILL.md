@@ -79,7 +79,7 @@ Then invoke `arn-code-codebase-analyzer` (existing codebase) or `arn-code-patter
 
 Specs may have been written days or weeks before being planned. The codebase moves in the meantime — files get renamed, modules refactored, frameworks swapped. Before invoking the planner, verify the spec's concrete references still hold against HEAD.
 
-Spawn the `arn-code-drift-detector` agent via the Task tool with this context:
+Spawn the `arn-code-drift-detector` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 Verify whether the following specification still aligns with the current codebase.
@@ -118,7 +118,7 @@ The output file path is: `<plans-dir>/PLAN_PREVIEW_<spec-name>.md`
 
 **Check for existing PLAN_PREVIEW:** If a PLAN_PREVIEW file already exists at that path, inform the user: "A plan preview already exists for this spec: `<path>`. Would you like to regenerate it from scratch, or review the existing plan?" If review → skip to Step 5. If regenerate → proceed.
 
-Spawn the `arn-code-feature-planner` agent via the Task tool with this context:
+Spawn the `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 You are generating an implementation plan for the following specification.
@@ -157,19 +157,82 @@ Record the agent ID returned by the Task tool (needed for resume in Step 5b).
 After the planner agent completes:
 
 1. Read the generated plan from `<plans-dir>/PLAN_PREVIEW_<spec-name>.md`
-2. Present a structured summary to the user:
+2. Parse each phase's `**Complexity:**` and `**Complexity rationale:**` fields (added by the planner per `${CLAUDE_PLUGIN_ROOT}/agents/arn-code-feature-planner.md`'s Complexity Assessment section). If a phase is missing these fields (older plans), treat its complexity as `unknown` and skip the upgrade gate for it.
+3. Present a structured summary to the user:
    - **Spec:** the linked specification name
-   - **Phases:** list each phase with a 1-line description and key deliverables
+   - **Phases:** list each phase with a 1-line description, key deliverables, **and complexity rating** (e.g., `Phase 3: Dispatch Site Edits — 7 deliverables — complexity: complex`). Always show the rating, regardless of whether an upgrade gate fires.
    - **Dependencies:** which phases depend on which
    - **Total files:** approximate count of files to create/modify
    - **Testing:** whether testing phases are included
-3. Ask: **"Does this plan look right, or would you like to change anything?"**
+4. Ask: **"Does this plan look right, or would you like to change anything?"**
 
 **If the user approves** (e.g., "looks good", "approved", "yes", "proceed"):
-→ Go to Step 6.
+→ Go to **Step 5a (Complex Phase Upgrade Gate)** before Step 6.
 
 **If the user provides feedback** (e.g., "split phase 2 into two phases", "add error handling for X", "remove the caching component"):
 → Go to Step 5b.
+
+#### Step 5a: Complex Phase Upgrade Gate
+
+Before marking the plan approved, check whether the user should be offered an executor model upgrade for any complex phases.
+
+**Filter:** Build the list of phases with `**Complexity:** complex`. If empty, skip this step entirely and go to Step 6.
+
+**Profile detection:** Read the project's CLAUDE.md `## Arness` block for `Code agent model profile:`. Branch:
+- If the field is `all-opus`: skip this step silently (every agent is already on Opus, nothing to upgrade). Display brief status line: `Preference: complex phase upgrade silenced — profile is all-opus (no upgrade needed)`. Go to Step 6.
+- If the field is `balanced` or `custom`: continue.
+- If the field is missing or `.arness/agent-models/code.md` doesn't exist: treat as unknown and continue (run the gate — the user gets the choice).
+
+**Two-tier preference lookup** for `pipeline.complex-phase-upgrade` per `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/preferences-schema.md`:
+
+1. Read `.arness/workflow.local.yaml` — if file exists and key present, use that value (note source).
+2. Else read `~/.arness/workflow-preferences.yaml` — if file exists and key present, use that value (note source).
+3. Else treat as `null` (first encounter).
+
+Branch on the resolved value:
+
+- **`always`:** auto-mark every phase with complexity `complex` for `modelOverride: "opus"` in the in-memory plan structure (carried into save-plan). Display status line: `Preference: upgrading N complex phases to Opus executor (stored in <source>)`. Go to Step 6.
+- **`never`:** skip the gate silently. Go to Step 6.
+- **`ask`:** show the gate below. Do NOT show the remember-this follow-up afterward.
+- **`null` (first encounter):** show the gate below. After the user answers, show the remember-this follow-up.
+
+**Gate (shown when value is `ask`, `null`, or invalid):**
+
+Build a phase list for the prompt:
+```
+N phases are rated complex:
+  - Phase 2: <title> — <complexityRationale>
+  - Phase 3: <title> — <complexityRationale>
+  - Phase 5: <title> — <complexityRationale>
+```
+
+Ask (using `AskUserQuestion`):
+
+**"N phases are rated complex. Upgrade ALL of them to Opus for execution? (Reviewer dispatches stay on configured tier.)"**
+
+Options:
+1. **Yes, upgrade all complex phases** (Recommended for known-complex work) — mark every complex phase for `modelOverride: "opus"`
+2. **No, keep configured tier** — no override applied; phases run on the agent-models lookup result
+
+If **Yes**: mark every complex phase in the in-memory plan structure for `modelOverride: "opus"`. The override is persisted by `arn-code-save-plan` Step 5 into PROGRESS_TRACKER.json.
+If **No**: no override applied.
+
+**Follow-up (only when preference was null):** After the user answers the gate, ask:
+
+Ask (using `AskUserQuestion`):
+
+**"Should Arness remember this choice for future sessions?"**
+
+Options:
+1. **Yes, always upgrade complex phases** (saves `always` to preferences)
+2. **Yes, never upgrade complex phases** (saves `never` to preferences)
+3. **No, ask me each time**
+
+If **Yes (always)**: write `always` to `~/.arness/workflow-preferences.yaml` under `pipeline.complex-phase-upgrade`. Create `~/.arness/` directory and file if they do not exist. If file exists, read first, add or update the key under `pipeline:`, write back preserving all existing keys.
+If **Yes (never)**: write `never` to `~/.arness/workflow-preferences.yaml` under `pipeline.complex-phase-upgrade` (same write logic).
+If **No**: write `ask` to `~/.arness/workflow-preferences.yaml` under `pipeline.complex-phase-upgrade` (same write logic).
+
+After Step 5a completes (gate applied or skipped), go to Step 6.
 
 #### Step 5b: Iterate with Feedback
 
@@ -187,7 +250,7 @@ to the same file. Summarize what you changed.
 ```
 
 **If resume fails** (API error, agent ID no longer valid):
-Fall back to spawning a fresh `arn-code-feature-planner` agent with:
+Fall back to spawning a fresh `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 You are revising an existing implementation plan based on user feedback.

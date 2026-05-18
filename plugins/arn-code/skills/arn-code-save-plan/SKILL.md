@@ -190,6 +190,7 @@ Populate with:
 - One entry per phase in `phases[]`:
   - `phaseNumber`, `phaseTitle`, `planFile` from the phase plans
   - `implementation.status`: `"not_started"`, `implementation.taskId`: the implementation task number from TASKS.md for this phase, `implementation.reportFile`: `reports/IMPLEMENTATION_REPORT_PHASE_N.json`
+  - `implementation.modelOverride`: `"opus"` if the upstream `arn-code-plan` Step 5a or `arn-code-batch-planning` Step 3.5c marked this phase for upgrade (read from the plan structure or the in-memory upgrade list passed by the orchestrator), otherwise `null`. The upgrade decision is captured per-phase based on the phase's `**Complexity:** complex` rating combined with the user's gate answer per `pipeline.complex-phase-upgrade`. See `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/preferences-schema.md` "Complex Phase Upgrade" section for the full decision flow.
   - `testing.status`: `"not_started"` if the phase has a Testing section, or `"none"` if it does not. `testing.taskId`: the testing task number from TASKS.md (or `null` if no testing), `testing.reportFile`: `reports/TESTING_REPORT_PHASE_N.json`
   - `review.verdict`: empty string, `review.reviewCycles`: `0`, `review.reportFile`: `reports/TASK_REVIEW_TASK_N.json`
 

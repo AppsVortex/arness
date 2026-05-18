@@ -13,7 +13,8 @@
         "status": "not_started | in_progress | completed | skipped",
         "taskId": null,
         "completedAt": "",
-        "reportFile": "reports/IMPLEMENTATION_REPORT_PHASE_1.json"
+        "reportFile": "reports/IMPLEMENTATION_REPORT_PHASE_1.json",
+        "modelOverride": null
       },
       "testing": {
         "status": "not_started | in_progress | completed | skipped | none",

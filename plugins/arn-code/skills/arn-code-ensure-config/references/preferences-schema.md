@@ -16,6 +16,7 @@ pipeline:
   sketch-preview: always | never | ask
   simplification: always | auto-all | skip | ask
   expert-debate: standard | auto | ask
+  complex-phase-upgrade: always | never | ask
 ```
 
 ### Key Definitions
@@ -28,6 +29,7 @@ pipeline:
 | `sketch-preview` | `always` = generate sketch preview; `never` = skip sketch preview; `ask` = show gate each time (no follow-up) | arn-code-swift 2b, arn-code-standard 2b |
 | `simplification` | `always` = run simplification pass; `auto-all` = run simplification and auto-approve all non-deferred findings without prompting (used by batch-implement workers); `skip` = skip simplification; `ask` = show gate each time (no follow-up) | arn-implementing G3, arn-code-swift 4b/5b, arn-code-standard 5b, arn-code-batch-implement workers |
 | `expert-debate` | `standard` = standard spec (no expert debate); `auto` = propose expert debate when scope score is 16+ (see threshold below); `ask` = show gate each time (no follow-up) | arn-planning G2 |
+| `complex-phase-upgrade` | `always` = auto-upgrade executor to Opus for any phase the planner rates `complex`; `never` = never upgrade (skip the gate silently); `ask` = show the all-or-none gate each time (no follow-up). See "Complex Phase Upgrade" section below for the silence rule and within-batch auto-apply behavior. | arn-code-plan Step 5, arn-code-batch-planning per-batch-entry |
 
 ---
 
@@ -172,6 +174,46 @@ When `expert-debate` resolves to `auto`:
 
 ---
 
+## Complex Phase Upgrade
+
+When `complex-phase-upgrade` resolves to a non-null value, the gate at `arn-code-plan` Step 5 (and `arn-code-batch-planning` per-batch-entry) checks the planner's per-phase complexity ratings AND the active model profile before deciding whether to fire.
+
+### Profile-aware silence
+
+The gate is **silently skipped** when the active model profile is `all-opus` (read from CLAUDE.md `## Arness` block: `Code agent model profile:`). Rationale: every agent is already on Opus, so there is nothing to upgrade. The gate would be a no-op prompt.
+
+The gate fires when the profile is `balanced`, `custom`, or undetectable (treat unknown as a runs-the-gate condition — the user gets the choice; if they accept, the override propagates regardless of any agent-models lookup).
+
+### Gate granularity: all-or-none per plan
+
+When at least one phase in the plan is rated `complex`, the gate prompt is **all-or-none**: "N phases are rated complex (rationale: ...) — upgrade ALL of them to Opus for execution? Yes / No". This gives the user one decision per plan. Per-task or per-phase Y/N would create excessive friction; users can still do per-task overrides via `/arn-code-execute-task` with manual model override.
+
+If the user accepts, every `complex` phase in the plan gets `implementation.modelOverride: "opus"` written to PROGRESS_TRACKER.json by `arn-code-save-plan`. Phases rated `simple` or `moderate` are NOT upgraded.
+
+### Within-batch auto-apply (arn-code-batch-planning only)
+
+`arn-code-batch-planning` produces multiple plans in sequence. When the gate fires for the first plan with complex phases in a batch session, the user's answer is captured in **session-scoped memory** for that batch run AND optionally persisted to `~/.arness/workflow-preferences.yaml` via the standard remember-this follow-up.
+
+- If the user answers Yes (with no remember-this) → mark current plan's complex phases for upgrade AND silently auto-apply Yes to subsequent batch entries (no nag mid-batch). Session memory only.
+- If the user answers No (with no remember-this) → no upgrade for current plan AND silently skip the gate for subsequent batch entries.
+- If the user persists `always` via remember-this → applies to current AND subsequent batch entries AND all future sessions.
+- If the user persists `never` via remember-this → no gate fires anywhere.
+- If the user persists `ask` via remember-this → the gate continues to fire per-batch-entry in subsequent batches. Within the current batch, the latest answer still controls subsequent entries (session memory).
+
+This prevents the user from being prompted repeatedly when working through many batch entries with similar complexity profiles.
+
+### Override scope: executor only
+
+The override applies only to the executor agent's dispatch. Reviewer dispatches stay on the configured tier. The user explicitly framed this as an executor upgrade (the agent that does the actual code modification), and reviewers re-run targeted tests + validate against patterns — operational work where Sonnet (in `balanced`) is sufficient.
+
+A future enhancement could add `pipeline.complex-phase-reviewer-upgrade` if data shows reviewer-tier upgrades on complex phases produce meaningfully better outcomes.
+
+### Cost tradeoff
+
+If you find yourself frequently answering Yes to the upgrade gate, consider switching to the `all-opus` profile instead. The `balanced` profile + `complex-phase-upgrade: always` may end up paying Opus cost for most phases anyway, defeating the cost saving. The `complex-phase-upgrade` feature is most useful when you genuinely want `balanced` defaults but are willing to upgrade for known-complex work.
+
+---
+
 ## Status Line Format
 
 When auto-proceeding with a stored preference, display a brief status line. The format depends on the source file:
@@ -195,4 +237,7 @@ Preference: generating sketch preview (stored in workflow-preferences.yaml)
 Preference: running simplification pass (stored in workflow-preferences.yaml)
 Preference: standard spec, no expert debate (stored in workflow-preferences.yaml)
 Preference: expert debate proposed (scope score 18, auto mode in workflow-preferences.yaml)
+Preference: upgrading 3 complex phases to Opus executor (stored in workflow-preferences.yaml)
+Preference: complex phase upgrade silenced — profile is all-opus (no upgrade needed)
+Preference: complex phase upgrade applied to remaining batch entries (session auto-apply)
 ```

@@ -68,7 +68,12 @@ Follow the same executor → reviewer → fix cycle as `arn-code-execute-plan`'s
    Always promote from sketch rather than writing matching files from scratch.
 4. **Execute-review cycle per task** (respecting dependency order from TASKS.md):
 
-   a. **Spawn executor**: Spawn a `arn-code-task-executor` agent with:
+   a. **Spawn executor**: First **determine the executor model**:
+      - Read PROGRESS_TRACKER.json. Find the phase entry whose `implementation.taskId` matches the current task ID.
+      - If `phase.implementation.modelOverride` is non-null (e.g., `"opus"`), use that value as the `model` parameter for this dispatch. Skip the standard agent-models lookup. Emit a one-line status: `Phase <N> (<phaseTitle>) executor model: <override> (upgraded — complex phase per pipeline.complex-phase-upgrade)`.
+      - If `phase.implementation.modelOverride` is null or the field is missing, fall through to the standard lookup: pass the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
+
+      Then spawn a `arn-code-task-executor` agent via the Task tool with the determined model. Context:
       - The task ID and full task description (from TASKS.md)
       - Project folder path: {plan_path}
       - Phase plan file path (extracted from the task description)
@@ -78,7 +83,7 @@ Follow the same executor → reviewer → fix cycle as `arn-code-execute-plan`'s
       - Sketch context (manifest path and directory, if applicable)
       - Instructions: implement the task according to the phase plan, run ONLY targeted tests (precise targeting, never full suite), generate IMPLEMENTATION_REPORT and/or TESTING_REPORT
 
-   b. **Spawn reviewer**: After executor completes, spawn a `arn-code-task-reviewer` agent with:
+   b. **Spawn reviewer**: After executor completes, spawn a `arn-code-task-reviewer` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
       - The task ID and description
       - Implementation/testing report paths from the executor
       - List of files created/modified by the executor

@@ -34,7 +34,11 @@ WHILE there are pending tasks:
 
   For each unblocked pending task in this batch:
     a. Mark the task as in_progress via TaskUpdate
-    b. Spawn a arn-code-task-executor agent via the Task tool with this prompt:
+    b. **Determine the executor model.** First check the per-phase upgrade override:
+       - Read PROGRESS_TRACKER.json. Find the phase entry whose `implementation.taskId` matches the current task ID.
+       - If `phase.implementation.modelOverride` is non-null (e.g., `"opus"`), use that value as the `model` parameter for this dispatch. Skip the standard agent-models lookup. Emit a one-line status to the user: `Phase <N> (<phaseTitle>) executor model: <override> (upgraded — complex phase per pipeline.complex-phase-upgrade)`.
+       - If `phase.implementation.modelOverride` is null or the field is missing, fall through to the standard lookup: pass the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
+    Then spawn a arn-code-task-executor agent via the Task tool with the determined model. Context for the prompt:
        - Task ID and full task description (from TaskGet)
        - Project name: <PROJECT_NAME>
        - Project folder path: <plans-dir>/<PROJECT_NAME>/
@@ -84,7 +88,7 @@ WHILE there are pending tasks:
     a. Read the executor's output to extract:
        - Report file path(s) (implementation report and/or testing report)
        - List of files created and modified
-    b. Spawn a arn-code-task-reviewer agent via the Task tool with this prompt:
+    b. Spawn a arn-code-task-reviewer agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context for the prompt:
        - Task ID and full task description
        - Project name: <PROJECT_NAME>
        - Project folder path: <plans-dir>/<PROJECT_NAME>/
@@ -154,7 +158,7 @@ WHILE there are pending tasks:
           - After the executor returns, go back to step 4 for this task only
             (re-run the reviewer)
         - IF review feedback mode = "fresh":
-          - Spawn a NEW arn-code-task-executor agent via the Task tool with:
+          - Spawn a NEW arn-code-task-executor agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
             - All original task context (same as step 2b)
             - PLUS: the review report path
             - PLUS: specific findings to fix from the reviewer

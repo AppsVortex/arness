@@ -100,10 +100,35 @@ Group the work into logical phases. Each phase should produce a **testable incre
 
 **For each phase, define:**
 - Phase name and objective (1-2 sentences)
+- **Complexity rating** (`simple`, `moderate`, or `complex`) — see "Complexity Assessment per Phase" below
+- **Complexity rationale** (1 line) — the load-bearing reason for the rating
 - Deliverables: specific files to create or modify, with descriptions
 - Tasks: concrete implementation steps with file paths and pattern references
 - Dependencies: which earlier phases must be complete before this one starts
 - Testing approach: what tests to write and run for this phase (if applicable)
+
+#### Complexity Assessment per Phase
+
+Rate each phase against the 6 criteria from `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-swift/references/complexity-criteria.md`:
+
+1. **File count** — simple: 1-3 files; moderate: 4-8; complex: 9+
+2. **Architectural changes** — simple: none; moderate: minor extensions; complex: new abstractions or patterns
+3. **Cross-cutting concerns** — simple: single module; moderate: 2-3 modules; complex: 4+ modules / system-wide
+4. **Test work** — simple: 1-3 updates; moderate: 4-8; complex: new test infrastructure
+5. **UI scope** — simple: no UI or minor tweak; moderate: new component or significant modification; complex: new page or flow
+6. **Risk level** — simple: easily reversible; moderate: medium-risk modifications; complex: data migrations / breaking changes / auth/payment changes
+
+**Phase rating rules** (apply to the phase's combined criterion ratings):
+- `simple` — 5-6 criteria rate simple AND no architectural risk
+- `moderate` — 3-4 criteria rate simple, OR isolated complex criterion with rest simple/moderate
+- `complex` — 3+ criteria rate complex, OR a fundamental architectural risk in this phase
+
+**Complexity rationale** is a 1-line summary of the load-bearing reason — the criterion or risk that drove the rating. Examples:
+- `complex` → "12 files across 4 modules; new abstraction layer for repository pattern"
+- `moderate` → "5 files in 2 modules; extends existing event-handler pattern with one new variant"
+- `simple` → "2 files in single module; adds test for existing utility"
+
+The `arn-code-plan` skill consumes the per-phase complexity to surface it in the plan summary and, if `complex` AND the user's profile is not `all-opus`, to gate an executor model upgrade per `pipeline.complex-phase-upgrade` (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/preferences-schema.md`). Be honest in your ratings — under-rating cheats the user out of the upgrade offer; over-rating creates unnecessary cost.
 
 ### 4. Write the Plan
 
@@ -141,6 +166,9 @@ Spec: <specs-dir>/<spec-filename>
 ## Phase 1: [Phase Name]
 
 **Objective:** [1-2 sentences]
+
+**Complexity:** simple | moderate | complex
+**Complexity rationale:** [1 line — the load-bearing reason for the rating, e.g., "9 files across 3 modules; new repository abstraction"]
 
 **Dependencies:** None | Phase N
 
