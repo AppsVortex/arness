@@ -126,7 +126,7 @@ Check if the project uses Git, determine the code hosting platform, and identify
 
 ### Step 3A: Analyze Codebase Patterns
 
-Invoke the `arn-code-codebase-analyzer` agent with:
+Invoke the `arn-code-codebase-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The detected project type (backend/frontend/fullstack — infer from the codebase)
 - The source root path (infer from project structure)
 - Any framework hint (infer from manifests/markers)
@@ -166,7 +166,7 @@ Be conversational, not rigid. Skip questions where the answer is obvious from pr
 
 ### Step 3B-2: Generate Recommended Patterns
 
-Invoke the `arn-code-pattern-architect` agent with all the technology choices gathered above.
+Invoke the `arn-code-pattern-architect` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with all the technology choices gathered above.
 
 The agent returns recommended code patterns, testing patterns, and architecture — with concrete best-practice examples marked as "Recommended" rather than real file references.
 
@@ -295,6 +295,22 @@ Record the answer for the config write in Step 9.
 
 If `linting.md` does not exist (e.g., the analyzer failed earlier in Step 6, or this is a partial init), default the question's suggested value to `Skip` so the user is not blocked, and note in the config that linting will be re-checked on the next `arn-code-ensure-config` run.
 
+### Step 8c: Choose Model Profile for arn-code Agents
+
+Run the **Profile selection** procedure documented in `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` under the "Model profile field" section. That procedure is the single source of truth for the prompt + write + copy + checksum flow — do NOT duplicate the AskUserQuestion or file-copy logic here.
+
+The procedure performs (in order):
+1. Cross-plugin default suggestion (read sibling plugin profile fields if present in the existing `## Arness` block)
+2. AskUserQuestion with title "Choose model profile for arn-code agents" and two options: `all-opus` (default unless a sibling chose `balanced`) and `balanced`
+3. Append `- **Code agent model profile:** <choice>` to the `## Arness` block
+4. `mkdir -p .arness/agent-models/` then copy `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/agent-models-presets/<choice>.md` to `.arness/agent-models/code.md`
+5. Compute SHA-256 and record it in `.arness/agent-models/.checksums.json` along with the profile name and version
+6. Inform the user with a one-line confirmation
+
+The field write in step 3 of the procedure is captured for the CLAUDE.md write in Step 9 of this init flow — write the chosen value to a holding variable and let Step 9 emit it inline with all other fields. The preset copy + checksum (steps 4-5 of the procedure) happen here regardless of when the CLAUDE.md write is performed.
+
+Record the chosen profile for the config write in Step 9.
+
 ---
 
 ### Step 9: Persist Configuration to CLAUDE.md
@@ -313,6 +329,7 @@ Write (or update) the `## Arness` section in the project's CLAUDE.md:
 - **Code patterns:** [chosen-pattern-docs-path]
 - **Docs directory:** [chosen-docs-path]
 - **Linting:** enabled | none | skip
+- **Code agent model profile:** all-opus | balanced | custom
 - **Git:** yes | no
 - **Platform:** github | bitbucket | none
 - **Issue tracker:** github | jira | none
@@ -406,7 +423,7 @@ Entered from Step 1 when the user chooses **Upgrade**. Diagnoses gaps using the 
 
 ### Step U1: Run Diagnostic
 
-Invoke the `arn-code-doctor` agent via the Task tool with:
+Invoke the `arn-code-doctor` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Description: "Comprehensive health check for arn-code-init upgrade. Check ALL categories: config fields, directories, template files, checksums, Git/Platform/Issue tracker state, platform labels, and pattern doc schema compliance. Use only Read/Glob/Grep and the allowed Bash commands (git status, git remote -v, gh auth status, gh label list, bkt --version, bkt auth status, ls). Do NOT run claude CLI commands."
 - Project root path
 - The parsed `## Arness` config content

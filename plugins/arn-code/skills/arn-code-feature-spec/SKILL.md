@@ -20,7 +20,7 @@ Develop a feature idea into a well-formed specification through iterative conver
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
 
 ## Workflow
 

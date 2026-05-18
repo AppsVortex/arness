@@ -124,17 +124,17 @@ Read ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-assess/references/assessment-protocol
 
 **Agent invocations — launch all applicable agents in parallel:**
 
-**Always invoke `arn-code-architect`** with:
+**Always invoke the `arn-code-architect` agent** via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The architect assessment prompt template from the protocol
 - Codebase context: full content of `code-patterns.md`, `testing-patterns.md`, `architecture.md`
 - Scope: the scope from G1
 
-**If `has_ui_patterns` is true**, also invoke `arn-code-ux-specialist` with:
+**If `has_ui_patterns` is true**, also invoke the `arn-code-ux-specialist` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The UX specialist assessment prompt template from the protocol
 - Context: `ui-patterns.md`, `architecture.md`, `code-patterns.md`
 - Scope from G1
 
-**If `has_security_patterns` is true**, also invoke `arn-code-security-specialist` with:
+**If `has_security_patterns` is true**, also invoke the `arn-code-security-specialist` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The security specialist assessment prompt template from the protocol
 - Context: `security-patterns.md`, `architecture.md`, `code-patterns.md`
 - Scope from G1
@@ -303,7 +303,7 @@ Show progress:
 Arness Assess: scope → assess → prioritize → spec(s) → plan → save → execute → TEST → ship                                                                                ^^^^
 ```
 
-Invoke the `arn-code-test-specialist` agent via the Agent tool with:
+Invoke the `arn-code-test-specialist` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - **Scope:** "full suite"
 - **Code patterns directory:** the configured code-patterns path
 

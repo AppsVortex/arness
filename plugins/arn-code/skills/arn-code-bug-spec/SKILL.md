@@ -19,7 +19,7 @@ This is a conversational skill. It runs in normal conversation (NOT plan mode). 
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
 
 ## Workflow
 
@@ -81,7 +81,7 @@ Hold this context for use throughout the conversation. Do not dump all of it on 
 
 ### Step 3: Initial Investigation + Architectural Validation
 
-Invoke the `arn-code-investigator` agent with:
+Invoke the `arn-code-investigator` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 **Bug description:** The user's report from Step 1.
 
@@ -89,7 +89,7 @@ Invoke the `arn-code-investigator` agent with:
 
 **Specific hypothesis:** None for the initial invocation.
 
-Once the investigator returns with a root cause and proposed fix direction, invoke the `arn-code-architect` agent with:
+Once the investigator returns with a root cause and proposed fix direction, invoke the `arn-code-architect` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 **Feature idea:** The investigator's findings -- root cause, scope assessment, and proposed fix direction.
 
@@ -137,7 +137,7 @@ Present the fix proposal with specific files and test plan, offer the user a cho
 
 1. Inform the user: "This fix is complex enough to benefit from a structured plan. Let me capture the investigation results in a specification."
 
-2. Invoke the `arn-code-architect` agent with:
+2. Invoke the `arn-code-architect` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - The root cause analysis from the investigator
    - The full codebase context from Step 2
    - A fix design question: "Design a fix approach for this bug that aligns with the system architecture."

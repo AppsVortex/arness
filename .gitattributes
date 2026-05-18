@@ -1,0 +1,5 @@
+# Force LF line endings on shell scripts so Windows checkouts (where Git's
+# autocrlf=true is the default) don't corrupt the bash shebang or break
+# `chmod +x` semantics. Required for the ensure-config cache-check.sh
+# scripts that run on user machines.
+plugins/*/skills/*-ensure-config/scripts/*.sh text eol=lf

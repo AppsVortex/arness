@@ -22,7 +22,7 @@ This skill serves two primary use cases:
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Infra fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Infra fields before proceeding.
 
 After Step 0 completes, read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/experience-derivation.md` and derive the user's infrastructure experience level from their profile.
 
@@ -74,7 +74,7 @@ Resolve the application project based on topology:
 
 ### Step 3: Full Application Analysis
 
-Invoke the `arn-infra-request-analyzer` agent in Mode B (full application analysis). Pass the loaded codebase patterns, architecture content, deferred backlog (if any), and infrastructure config fields as structured context.
+Invoke the `arn-infra-request-analyzer` agent via the Task tool in Mode B (full application analysis), passing the model from `.arness/agent-models/infra.md` as the `model` parameter (see `plugins/arn-infra/skills/arn-infra-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Pass the loaded codebase patterns, architecture content, deferred backlog (if any), and infrastructure config fields as structured context.
 
 > Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-assess/references/agent-invocation-guide.md` for the exact prompt template and expected return format.
 

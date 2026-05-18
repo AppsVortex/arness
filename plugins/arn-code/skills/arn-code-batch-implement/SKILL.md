@@ -26,7 +26,7 @@ arn-code-batch-planning -> **arn-code-batch-implement** (pre-flight -> spawn wor
 
 ### Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. Extract from `## Arness`:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. Extract from `## Arness`:
 
 - **Plans directory** -- base path where project plans are saved
 - **Code patterns** -- path to the directory containing stored pattern documentation

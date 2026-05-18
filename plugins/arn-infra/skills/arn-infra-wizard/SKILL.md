@@ -22,7 +22,7 @@ This skill is a **sequencer and decision-gate handler**. It MUST NOT duplicate s
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Infra fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Infra fields before proceeding.
 
 After Step 0 completes, read `${CLAUDE_PLUGIN_ROOT}/skills/arn-infra-ensure-config/references/experience-derivation.md` and derive the user's infrastructure experience level from their profile.
 

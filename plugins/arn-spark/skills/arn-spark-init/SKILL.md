@@ -210,6 +210,24 @@ Downstream skills check these flags — not MCP availability — to decide wheth
 
 ---
 
+### Step 3.6: Choose Model Profile for arn-spark Agents
+
+Run the **Profile selection** procedure documented in `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-ensure-config/references/step-0-fast-path.md` under the "Model profile field" section. That procedure is the single source of truth for the prompt + write + copy + checksum flow — do NOT duplicate the AskUserQuestion or file-copy logic here.
+
+The procedure performs (in order):
+1. Cross-plugin default suggestion (read sibling plugin profile fields if present in the existing `## Arness` block — e.g., if the user previously chose `balanced` for arn-code, suggest `balanced` here too)
+2. AskUserQuestion with title "Choose model profile for arn-spark agents" and two options: `all-opus` (default unless a sibling chose `balanced`) and `balanced`
+3. Append `- **Spark agent model profile:** <choice>` to the `## Arness` block
+4. `mkdir -p .arness/agent-models/` then copy `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-init/references/agent-models-presets/<choice>.md` to `.arness/agent-models/spark.md`
+5. Compute SHA-256 and record it in `.arness/agent-models/.checksums.json` along with the profile name and version
+6. Inform the user with a one-line confirmation
+
+The field write in step 3 of the procedure is captured for the CLAUDE.md write in Step 4 of this init flow — write the chosen value to a holding variable and let Step 4 emit it inline with all other fields. The preset copy + checksum (steps 4-5 of the procedure) happen here regardless of when the CLAUDE.md write is performed.
+
+Record the chosen profile for the config write in Step 4.
+
+---
+
 ### Step 4: Persist Configuration to CLAUDE.md
 
 Write (or update) the `## Arness` section in the project's CLAUDE.md:
@@ -223,6 +241,7 @@ Write (or update) the `## Arness` section in the project's CLAUDE.md:
 - **Spikes directory:** [chosen-path]
 - **Visual grounding directory:** [chosen-path]
 - **Reports directory:** [chosen-path]
+- **Spark agent model profile:** all-opus | balanced | custom
 - **Git:** yes | no
 - **Platform:** github | bitbucket | none
 - **Issue tracker:** github | jira | none

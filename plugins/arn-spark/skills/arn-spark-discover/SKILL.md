@@ -20,7 +20,7 @@ This skill covers the WHAT and WHY of the product, including the **product pilla
 
 ## Step 0: Ensure Configuration (Non-Blocking)
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-ensure-config/references/ensure-config.md` and follow its instructions. This captures the user profile and configures `## Arness` with Arness Spark fields.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-ensure-config/references/step-0-fast-path.md` and follow its instructions. This captures the user profile and configures `## Arness` with Arness Spark fields.
 
 **Important:** This skill is designed for exploratory use before a project may fully exist. If ensure-config encounters errors (e.g., no git repository, CLAUDE.md cannot be created), proceed anyway using fallback defaults: Vision directory = `.arness/vision`, Reports directory = `.arness/reports`. Do not hard-block.
 
@@ -42,7 +42,7 @@ After receiving the idea, acknowledge with a brief restatement (2-3 sentences) t
 
 ### Step 2: Initial Analysis with Product Strategist
 
-Invoke the `arn-spark-product-strategist` agent with:
+Invoke the `arn-spark-product-strategist` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The user's raw idea description
 - Any context from the conversation so far
 
@@ -107,7 +107,7 @@ This is a two-phase process: **concrete examples first** (for user interaction),
      > **I can expand those into full profiles with personality traits, pain points, and day-in-the-life scenarios. Want me to research and draft those?**
      > 1. **Yes** — Expand into full persona profiles
      > 2. **No** — Keep as-is and continue
-3. If agreed, invoke `arn-spark-persona-architect` in **discovery mode** with: product vision, problem statement, user description (vague or concrete seeds), product pillars so far. The agent handles both cases -- generating from scratch or expanding user-provided specifics.
+3. If agreed, invoke the `arn-spark-persona-architect` agent in **discovery mode** via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context: product vision, problem statement, user description (vague or concrete seeds), product pillars so far. The agent handles both cases -- generating from scratch or expanding user-provided specifics.
 4. **Phase 1 -- Concrete examples:** Present the generated/expanded concrete personas (including personality traits): "Here are some specific people who would use this product. Do these ring true? Any to add, remove, or change?" The user interacts with these -- critiquing, adjusting, approving. Iterate until the user is satisfied. These are vivid, specific characters with personality.
 5. **Phase 2 -- Abstracted moulds:** Once concrete personas are approved, invoke the persona-architect again (or in the same pass) to derive the abstracted profiles (moulds) from the approved examples. Present: "Here are the generalized persona archetypes I've extracted from the examples. These moulds can be used later to generate more personas for testing. Do they capture the pattern?" The moulds define ranges, patterns, personality spectrums, and variation axes rather than single points.
 6. Record both: the approved concrete examples AND the abstracted moulds.
@@ -149,7 +149,7 @@ Framing adapts based on product type:
 
 This process ensures thorough, validated results rather than a shallow 3-query search:
 
-1. **Phase 1 -- Query Planning:** Invoke `arn-spark-market-researcher` (identification/plan) with: product description, problem space, known competitors. The agent generates 10-15 search queries across diverse angles (problem-focused, solution-focused, comparison, review, community, domain). Present the query plan briefly: "I've identified [N] search angles to explore. Searching now..."
+1. **Phase 1 -- Query Planning:** Invoke the `arn-spark-market-researcher` agent (identification/plan) via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context: product description, problem space, known competitors. The agent generates 10-15 search queries across diverse angles (problem-focused, solution-focused, comparison, review, community, domain). Present the query plan briefly: "I've identified [N] search angles to explore. Searching now..."
 
 2. **Phase 2 -- Parallel Search:** Split the queries into 2-3 batches. Invoke `arn-spark-market-researcher` (identification/search) **2-3 times in parallel**, each with a batch of 4-6 queries. Each agent searches independently and returns raw findings.
 

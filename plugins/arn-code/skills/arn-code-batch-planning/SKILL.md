@@ -45,7 +45,7 @@ Sources:
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
 
 After configuration is ensured, extract the following from `## Arness`:
 - **Plans directory** — base path where project plans and PLAN_PREVIEW files are stored
@@ -331,7 +331,7 @@ Pre-analyzing [K] thorough features in parallel...
 (Swift and standard features already have plans — skipping pre-analysis for those.)
 ```
 
-For each thorough feature, spawn a `arn-code-batch-analyzer` agent with:
+For each thorough feature, spawn a `arn-code-batch-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - `run_in_background: true`
 - The feature's input type and source-specific context:
   - Greenfield: feature ID, feature file path, vision dir, use cases dir
@@ -416,7 +416,7 @@ After feature-spec completes and the finalized spec file exists (FEATURE_*.md):
 
 1. Read the finalized spec file
 2. Derive the spec name from the filename
-3. Spawn the `arn-code-feature-planner` agent with:
+3. Spawn the `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - `run_in_background: true`
    - The full spec file content (FEATURE_*.md or BUGFIX_*.md)
    - The spec file path (for the `Spec:` linkage line in the plan)
@@ -484,6 +484,8 @@ For each feature (in order):
 
 ### 3.5b. Plan Approval
 
+Before presenting the plan to the user, parse each phase's `**Complexity:**` and `**Complexity rationale:**` fields (added by `arn-code-feature-planner` per its Complexity Assessment section). When presenting the plan summary, **always show the complexity rating per phase** (e.g., `Phase 3: Dispatch Site Edits — 7 deliverables — complexity: complex`).
+
 Ask (using `AskUserQuestion`):
 
 **"Does this plan for F-XXX look right?"**
@@ -493,11 +495,71 @@ Options:
 2. **Adjust** — Let me refine the plan
 3. **Skip this feature** — Remove from the batch
 
-If **Approve**: invoke `Skill: arn-code:arn-code-save-plan`. Proceed to the next feature's plan.
+If **Approve**: run the **Complex Phase Upgrade Gate** below (Step 3.5c) before invoking save-plan. After the gate completes, invoke `Skill: arn-code:arn-code-save-plan`. Proceed to the next feature's plan.
 
-If **Adjust**: let the user provide feedback. Spawn the `arn-code-feature-planner` agent (foreground) with revision instructions and the current plan path. Re-present with the same 3 options. Repeat until approved or skipped.
+If **Adjust**: let the user provide feedback. Spawn the `arn-code-feature-planner` agent via the Task tool (foreground), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with revision instructions and the current plan path. Re-present with the same 3 options. Repeat until approved or skipped.
 
 If **Skip**: remove this feature from the batch. Revert Feature Tracker status to `pending` if applicable. Continue with the next feature's plan.
+
+### 3.5c. Complex Phase Upgrade Gate (with within-session auto-apply)
+
+Before invoking save-plan for an approved plan, check whether to upgrade complex phases to Opus executor. This gate uses **session-scoped memory** for the batch run: the user's answer applies to subsequent batch entries without re-prompting.
+
+**Session memory model** — at batch start, initialize `complexUpgradeSessionAnswer = null`. As batch entries are processed, update this variable based on user answers. The session variable is independent of the persistent preference (which is updated only via the remember-this follow-up).
+
+**Filter:** Build the list of phases in the current plan with `**Complexity:** complex`. If empty, skip this step entirely and proceed to save-plan.
+
+**Check session memory first:** If `complexUpgradeSessionAnswer` is set (from an earlier batch entry):
+- If `yes`: silently mark all complex phases in this plan for `modelOverride: "opus"` (no prompt). Display brief status: `Preference: complex phase upgrade applied to remaining batch entries (session auto-apply)`. Proceed to save-plan.
+- If `no`: silently skip the upgrade for this plan (no prompt). Proceed to save-plan.
+
+**If session memory is null**, do profile detection and the standard preference lookup:
+
+**Profile detection:** Read the project's CLAUDE.md `## Arness` block for `Code agent model profile:`. Branch:
+- If `all-opus`: silently skip this gate. Display status: `Preference: complex phase upgrade silenced — profile is all-opus (no upgrade needed)`. Set `complexUpgradeSessionAnswer = no` (so subsequent entries also silently skip — they'll have the same profile). Proceed to save-plan.
+- If `balanced` or `custom`: continue.
+- If field missing or unknown: treat as `unknown` and continue.
+
+**Two-tier preference lookup** for `pipeline.complex-phase-upgrade` per `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/preferences-schema.md`:
+
+1. Read `.arness/workflow.local.yaml` — if file exists and key present, use that value.
+2. Else read `~/.arness/workflow-preferences.yaml` — if file exists and key present, use that value.
+3. Else treat as `null` (first encounter).
+
+Branch on the resolved value:
+
+- **`always`:** auto-mark every complex phase in this plan for `modelOverride: "opus"`. Set `complexUpgradeSessionAnswer = yes` so subsequent entries auto-apply. Display status. Proceed to save-plan.
+- **`never`:** skip this gate. Set `complexUpgradeSessionAnswer = no`. Proceed to save-plan.
+- **`ask`:** show the gate below. Do NOT show the remember-this follow-up.
+- **`null` (first encounter):** show the gate below. After the user answers, show the remember-this follow-up.
+
+**Gate (shown when value is `ask`, `null`, or invalid):**
+
+Ask (using `AskUserQuestion`):
+
+**"N phases in F-XXX are rated complex (rationale: ...). Upgrade ALL of them to Opus for execution? Reviewer dispatches stay on configured tier. This answer will apply to subsequent batch entries in this session."**
+
+Options:
+1. **Yes, upgrade complex phases** (Recommended for known-complex work) — applies to this plan AND silently to subsequent batch entries
+2. **No, keep configured tier** — no override; applies to this plan AND silently to subsequent batch entries
+
+If **Yes**: mark every complex phase in this plan for `modelOverride: "opus"`. Set `complexUpgradeSessionAnswer = yes`.
+If **No**: no override applied. Set `complexUpgradeSessionAnswer = no`.
+
+**Follow-up (only when preference was null — first encounter):** After the gate, ask:
+
+Ask (using `AskUserQuestion`):
+
+**"Should Arness remember this choice for future sessions?"**
+
+Options:
+1. **Yes, always upgrade complex phases** (saves `always` to preferences — applies to this batch and all future sessions)
+2. **Yes, never upgrade complex phases** (saves `never` to preferences — applies to this batch and all future sessions)
+3. **No, ask me each time** (saves `ask` — within this batch the session-scoped answer above still controls subsequent entries; future batch sessions will fire the gate again on the first complex plan)
+
+Write the chosen value to `~/.arness/workflow-preferences.yaml` under `pipeline.complex-phase-upgrade` per the standard write protocol in preferences-schema.md.
+
+After the gate completes, proceed to save-plan invocation.
 
 ---
 

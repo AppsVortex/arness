@@ -21,7 +21,7 @@ This skill covers the HOW at a high level: what technologies to use and how the 
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Spark fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-spark-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Spark fields before proceeding.
 
 After Step 0 completes, extract from `## Arness`:
 - Vision directory, Use cases directory, Prototypes directory, Spikes directory, Visual grounding directory, Reports directory
@@ -81,7 +81,7 @@ Wait for user confirmation or corrections before proceeding.
 
 Read the user profile for expertise context. Check `.claude/arness-profile.local.md` first (project override takes precedence), then `~/.arness/user-profile.yaml`. Also check `.arness/preferences.yaml` for project-level team preferences.
 
-Invoke the `arn-spark-tech-evaluator` agent with:
+Invoke the `arn-spark-tech-evaluator` agent via the Task tool, passing the model from `.arness/agent-models/spark.md` as the `model` parameter (see `plugins/arn-spark/skills/arn-spark-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The product concept (or extracted requirements)
 - The full set of technical requirements from Step 1
 - The product pillars from Step 1

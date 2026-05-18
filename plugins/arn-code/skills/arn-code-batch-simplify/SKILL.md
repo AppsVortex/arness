@@ -32,7 +32,7 @@ If no `## Arness` section exists in the project's CLAUDE.md, inform the user: "A
 
 ### Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. Extract from `## Arness`:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. Extract from `## Arness`:
 
 - **Plans directory** (default: `.arness/plans`)
 - **Code patterns** path (default: `.arness`)
@@ -116,7 +116,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-batch-simplify/references/cross-feat
 
 Build the `{cross_feature_context}` block from the data collected in Step 2 — listing each feature's name, its files, and its change record path.
 
-Dispatch three Agent tool calls **in a single message** so they run in parallel:
+Dispatch three Agent tool calls **in a single message** so they run in parallel. Each call passes the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-reviewer`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` "Dispatch convention" for fallback behavior). The three reviewers share the same synthetic name — apply the multi-agent rule by passing the looked-up value to each call independently. Note: `arn-code-simplify-reviewer` is shared with `arn-code-simplify` since both skills perform the same conceptual review work.
 
 1. **Code Reuse Reviewer** — fill the cross-feature-prompts.md template with the file list, pattern documentation, and cross-feature context. Instruct the agent to focus on duplicated logic, missed utilities, and copy-paste patterns, with special attention to utilities created independently by different features.
 
@@ -209,26 +209,62 @@ The user may also change individual finding statuses (e.g., "approve SIM-001 but
 
 ### Step 7: Apply Approved Simplifications
 
-For each approved finding, in dependency order (if finding B depends on finding A's changes, apply A first):
+The orchestrator pre-sorts the approved findings by dependency order (if finding B depends on finding A's changes, A comes first), then dispatches a single anonymous Agent call to perform the apply work. The model is configurable via the agent-models config.
 
-1. Apply the suggested fix.
+**Dispatch the applier as an anonymous Agent tool call**, passing the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-applier`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` "Dispatch convention" for fallback behavior). Do NOT add any tool restriction — the applier inherits `Edit`, `Write`, `Bash`, `Read`, `Grep`, `Glob` from the orchestrator's toolbelt by default, and needs all of them. Note: `arn-code-simplify-applier` is shared with `arn-code-simplify` since both skills perform the same conceptual apply work; the cross-feature scope is conveyed via the findings list itself.
 
-2. Run targeted tests relevant to the modified files:
-   - Use the test command from testing-patterns.md
-   - Only run tests covering the modified files, not the full suite
+**Applier prompt contents:**
 
-3. If tests pass: mark the finding as `"applied"`. Record in `applicationResults`.
+- The pre-sorted list of approved findings (each with `id`, `title`, `description`, `suggestedFix`, `filesAffected`, `axis`, and `affectedFeatures`)
+- The targeted-test command (from testing-patterns.md)
+- Paths to relevant pattern docs (code-patterns.md, testing-patterns.md) so the applier can reference them when self-healing
+- The exact instructions below:
 
-4. If tests fail: attempt self-healing.
-   - Fix the implementation issue that caused the failure.
-   - Re-run the targeted tests.
+```
+For each finding in the provided list, IN ORDER:
+
+1. Capture pre-state: `git diff --no-color HEAD > /tmp/pre-{findingId}.diff`
+2. Apply the suggested fix (Edit/Write the affected files).
+3. Run the targeted test command. Capture stdout+stderr.
+4. If tests pass: emit `[FINDING-{findingId}: applied]` to stdout. Record status `"applied"`. Continue to next finding.
+5. If tests fail: attempt self-healing.
+   - Re-read the test output to identify the failure cause.
+   - Make a fix attempt (Edit the file).
+   - Re-run the targeted test command.
    - Up to 3 self-heal attempts per finding.
+6. If tests still fail after 3 attempts: revert this finding's changes via `git apply -R /tmp/pre-{findingId}.diff` (or, if the diff is empty because no prior changes existed, run `git checkout -- {filesAffected}`). Emit `[FINDING-{findingId}: reverted - <reason>]` to stdout. Record status `"reverted"` with the failure reason and last test output. Continue to next finding.
+7. Always emit a per-finding status line so the user sees progress in the transcript.
 
-5. If tests still fail after 3 attempts: **revert** the changes for this specific finding. Mark as `"reverted"` with the failure reason. Record in `applicationResults` and `testVerification.revertedFindings`.
+After processing all findings, run ONE final targeted test pass to verify the cumulative state is consistent. Capture the result.
 
-6. Proceed to the next finding regardless of whether this one was reverted.
+RETURN — strictly as the final message — a JSON object with this exact schema (no other text):
 
-After all approved findings are processed, run one final targeted test pass to verify the cumulative changes are consistent.
+{
+  "applicationResults": [
+    {
+      "findingId": "SIM-001",
+      "status": "applied" | "reverted",
+      "attempts": <integer 1-4>,
+      "testOutput": "<last test command output, truncated to 2000 chars>",
+      "revertReason": "<reason if reverted, omitted if applied>"
+    }
+  ],
+  "finalTestResult": {
+    "passed": <boolean>,
+    "output": "<final test pass output, truncated to 2000 chars>"
+  }
+}
+
+If you crash or have to abort partway through, return the JSON with results for the findings you DID process — do not omit the JSON entirely. Mark unprocessed findings as `status: "pending"` so the orchestrator can surface the partial state.
+```
+
+**After the applier returns:**
+
+1. Parse the returned JSON. If parsing fails or the schema is incomplete, treat any missing finding as `status: "pending"` and add a warning to the report's `warnings` array: `"Applier returned malformed or partial results. <N> findings have unknown status."`
+2. Populate the report's `applicationResults` array directly from the applier's return.
+3. Populate `testVerification.revertedFindings` from any entries with `status: "reverted"`.
+4. Populate `testVerification.finalTestPassed` from `finalTestResult.passed`.
+5. Format a brief user-facing summary from the per-finding statuses for display.
 
 ---
 
@@ -339,5 +375,5 @@ If no fixes were applied (all findings were rejected, deferred, or reverted), sk
 - Each self-heal cycle gets at most 3 attempts before revert.
 - Per-finding revert: a failed finding does not affect other successfully applied findings.
 - Never modify files outside the unified scope's file list without explicit user approval.
-- Anonymous Agent tool calls only — no named agent files for reviewers.
+- Reviewer and applier dispatches use synthetic agent names for model-config lookup; no agent files are required.
 - Report is written to `.arness/plans/BATCH_SIMPLIFICATION_REPORT.json`, not inside any feature subdirectory.

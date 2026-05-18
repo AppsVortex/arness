@@ -29,7 +29,7 @@ arn-code-batch-implement -> **arn-code-batch-merge** -> arn-code-batch-simplify
 
 ## Step 0: Ensure Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` and follow its instructions. This guarantees a user profile exists and `## Arness` is configured with Arness Code fields before proceeding.
 
 After configuration is ensured, extract the following from `## Arness`:
 - **Plans directory** -- base path where project plans and CHANGE_RECORD.json files are stored
@@ -80,7 +80,7 @@ Collect the final list: PR number, URL, feature name, CHANGE_RECORD path, platfo
 
 ## Step 2: Cross-PR Analysis (Delegated)
 
-Spawn the `arn-code-batch-pr-analyzer` agent in **foreground** (the results are needed before proceeding).
+Spawn the `arn-code-batch-pr-analyzer` agent via the Task tool in **foreground** (the results are needed before proceeding), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
 
 Pass to the agent:
 - PR list (number, URL, feature name, CHANGE_RECORD path)
