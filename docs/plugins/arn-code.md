@@ -104,6 +104,8 @@ Plan, build, and merge multiple features simultaneously using isolated worktrees
 
 - **`/arn-code-assess`** — Comprehensive technical assessment with 7 internal gates: scope definition, analysis, prioritization, spec generation, plan generation, execution, and shipping. Produces an actionable improvement plan.
 
+- **`/arn-code-dependency-audit`** — Dependency and supply-chain readiness review. Detects package managers, asks before running local audit commands, triages findings by severity and remediation risk, then routes safe fixes through swift, standard, or thorough workflows.
+
 - **`/arn-code-catch-up`** — Retroactively documents commits made outside the Arness pipeline. Backfills artifacts (specs, plans, change records) for those 2am hotfixes so the project history stays complete.
 
 - **`/arn-code-report`** — Diagnoses and reports Arness Code workflow issues. Cross-plugin aware — detects if the issue belongs to Spark or Infra and suggests the right report skill. For Spark issues use `/arn-spark-report`, for Infra use `/arn-infra-report`.
@@ -157,6 +159,7 @@ Plan, build, and merge multiple features simultaneously using isolated worktrees
 | `/arn-code-document-project` | Generate developer documentation |
 | **Utility** | |
 | `/arn-code-assess` | Comprehensive technical assessment (7 gates) |
+| `/arn-code-dependency-audit` | Dependency vulnerability triage and remediation routing |
 | `/arn-code-pick-issue` | Browse issues by Arness labels, route to workflow |
 | `/arn-code-create-issue` | Create issues with Arness labels |
 | `/arn-code-catch-up` | Backfill artifacts for out-of-pipeline commits |

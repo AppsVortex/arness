@@ -5,7 +5,7 @@ sidebar:
   order: 32
 ---
 
-Complete reference for all 35 Arness Code skills. For workflow-oriented documentation, see the [Arness Code plugin guide](../plugins/arn-code.md).
+Complete reference for all 36 Arness Code skills. For workflow-oriented documentation, see the [Arness Code plugin guide](../plugins/arn-code.md).
 
 ## Entry Points
 
@@ -91,6 +91,7 @@ The five first-citizen entry points are the primary way to interact with Arness 
 | `/arn-code-pick-issue` | Browse issues filtered by Arness labels, select one, and route it to the appropriate pipeline skill. Supports local-first dependency resolution from a greenfield feature backlog. | 1.2.0 |
 | `/arn-code-create-issue` | Create an issue in the configured issue tracker (GitHub or Jira) with Arness labels for type and priority. | 1.1.0 |
 | `/arn-code-catch-up` | Retroactively document commits made outside the Arness pipeline. Scans git history, identifies undocumented commits, and generates lightweight CATCHUP records. | 1.0.0 |
+| `/arn-code-dependency-audit` | Review dependency manifests and local audit output, triage vulnerabilities by severity and remediation risk, then route safe fixes through swift, standard, or thorough Arness workflows. | 0.1.0 |
 
 ## Diagnostics
 
