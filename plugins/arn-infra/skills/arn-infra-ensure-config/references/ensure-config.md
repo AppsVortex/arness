@@ -326,7 +326,7 @@ Entry-point skills invoke ensure-config as Step 0 on every workflow trigger (~30
 - `pluginVersion` differs from current (plugin upgrade)
 - `schemaVersion` differs from current (cache schema bump — silently invalidates)
 - Any of the 7 fingerprints differs from current state
-- GitHub `arness-*` label count != 7 (when Platform=github and `gh` CLI available — checked inline in `cache-check.sh`, not stored in the JSON)
+- GitHub `arness-*` label count != 8 (when Platform=github and `gh` CLI available — checked inline in `cache-check.sh`, not stored in the JSON)
 
 All invalidation paths trigger a cache miss, which causes the entry-point to read the full ensure-config.md and re-run Layers 1–3 — at the end of which this Layer 4 step writes a new cache.
 

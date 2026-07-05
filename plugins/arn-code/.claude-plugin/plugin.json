@@ -5,5 +5,5 @@
     "name": "Fryderyk Benigni",
     "url": "https://github.com/fredcallagan"
   },
-  "description": "Structured, artifact-driven development pipeline for Claude Code — plan, implement, review, and ship features with three ceremony tiers. 25 pipeline skills, 14 specialist agents."
+  "description": "Structured, artifact-driven development pipeline for Claude Code — plan, implement, review, and ship features with three ceremony tiers. Also includes arn-code-batch-cve-scan and arn-code-batch-cve-fix for CVE discovery, triage, and batch resolution. 37 pipeline skills, 18 specialist agents."
 }

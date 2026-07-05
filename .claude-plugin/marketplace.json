@@ -11,8 +11,8 @@
     {
       "name": "arn-code",
       "source": "./plugins/arn-code",
-      "description": "Core development pipeline for Claude Code — plan, implement, ship, review, and assess features with AI-assisted workflows. Progressive zero-config init with user profiling and expertise-aware recommendations. Three ceremony tiers (swift/standard/thorough) with severity-aware scope routing. Five entry points: arn-planning, arn-implementing, arn-shipping, arn-reviewing-pr, arn-assessing. Includes arn-code-sketch for UI preview, arn-code-swift for quick implementations, arn-code-standard for medium-complexity changes, and arn-code-catch-up for retroactive documentation.",
-      "version": "3.7.0",
+      "description": "Core development pipeline for Claude Code — plan, implement, ship, review, and assess features with AI-assisted workflows. Progressive zero-config init with user profiling and expertise-aware recommendations. Three ceremony tiers (swift/standard/thorough) with severity-aware scope routing. Five entry points: arn-planning, arn-implementing, arn-shipping, arn-reviewing-pr, arn-assessing. Includes arn-code-sketch for UI preview, arn-code-swift for quick implementations, arn-code-standard for medium-complexity changes, arn-code-catch-up for retroactive documentation, and arn-code-batch-cve-scan / arn-code-batch-cve-fix for CVE discovery, triage, and batch resolution (three-mode scan is safe to schedule via Claude Code Routines).",
+      "version": "3.8.0",
       "author": {
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"

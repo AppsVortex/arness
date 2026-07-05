@@ -8,7 +8,7 @@
 
 **Structured AI workflows for Claude Code. From first idea to production deploy.**
 
-Seven entry commands. That's all you need to remember. Behind them, 134 specialist skills and agents handle the details across three independent plugins — ideation, development, and infrastructure.
+Seven entry commands. That's all you need to remember. Behind them, 138 specialist skills and agents handle the details across three independent plugins — ideation, development, and infrastructure.
 
 Most AI coding tools help you write code faster. Arness helps you build software better. It gives your Claude Code session a structured pipeline: specs before code, plans before execution, reviews before shipping. Every stage produces a human-readable artifact that feeds the next. Nothing is hidden, nothing is locked in.
 

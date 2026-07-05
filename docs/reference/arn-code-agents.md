@@ -5,7 +5,7 @@ sidebar:
   order: 33
 ---
 
-Complete reference for all 16 Arness Code agents. Agents are specialist AI workers invoked by skills -- you don't call them directly. For workflow context, see the [Arness Code plugin guide](../plugins/arn-code.md).
+Complete reference for all 18 Arness Code agents. Agents are specialist AI workers invoked by skills -- you don't call them directly. For workflow context, see the [Arness Code plugin guide](../plugins/arn-code.md).
 
 ## Architecture & Planning
 
@@ -32,6 +32,8 @@ Complete reference for all 16 Arness Code agents. Agents are specialist AI worke
 | `arn-code-codebase-analyzer` | Gathers codebase intelligence by analyzing project structure, conventions, and patterns. Invoked by save-plan to inform plan structuring with codebase context. | Glob, Grep, Read | opus |
 | `arn-code-investigator` | Traces bugs to their root cause through hypothesis-driven investigation. Synthesizes bug reports with codebase context to determine what went wrong, where, and why. | Read, Glob, Grep, LSP | opus |
 | `arn-code-test-specialist` | Runs the project's test suite and interprets results. Used as a quality gate during assessment before shipping implementation changes. | Read, Glob, Grep, Bash | opus |
+| `arn-code-drift-detector` | Verifies that a previously-written specification still aligns with the current codebase. Invoked by arn-code-plan and arn-code-pick-issue to compare concrete references (file paths, symbol names, architectural claims) against HEAD and classify divergence by severity. | Glob, Grep, Read, Bash | opus |
+| `arn-code-cve-analyst` | Performs per-CVE triage during a security scan run — annotates reachability verdict, fix strategy, breaking-change risk, and batch-grouping hint. Never re-derives version-bound fields; echoes back a scanner-output checksum for reproducibility. | Read, Glob, Grep | opus |
 
 ## Specialist Expertise
 

@@ -200,6 +200,65 @@ The caller (init or ensure-config) will default the `Linting:` config field to `
 
 The discovered check command is a *hint*, not authoritative. Downstream consumers (the executor's per-task lint, the ship pre-commit gate) are expected to adapt to the actual environment — for example, if the project's lockfile indicates a different package manager than the one referenced in the discovered command.
 
+### 3D. Analyze security scanning patterns
+
+Detect security scanners, waiver mechanisms, and CI integration so the `arn-code-batch-cve-scan` skill can discover findings and the `arn-code-cve-analyst` agent can reason over them. This step is the design sibling of step 3C (linting and formatting); follow the same shape and the same agnostic stance. Do not pattern-match against a fixed list of scanner tool names — recognize the project's actual tooling using the evidence categories below and use judgement.
+
+**Evidence categories (technology-agnostic — scan any that exist):**
+
+1. **Dependency / package manifest entries.** Whatever manifest the project's ecosystem uses (Node, Python, Rust, Ruby, Go, Java, .NET, etc.). Look at script tables and dev-dependencies for any entry whose name or invoked binary suggests vulnerability auditing, advisory checking, supply-chain scanning, or CVE reporting (e.g., script names containing `audit`, `security`, `vuln`, `cve`, or invoking a binary whose purpose matches). Do not enumerate specific tools — recognize them from the shape of evidence.
+2. **Tool config files.** Files at the repo root or service root whose names indicate scanner-specific configuration. Recognize them presence-based by the pattern of a tool config (`.<tool>ignore`, `.<tool>`, `<tool>.yml`, `<tool>.toml`, etc.). Their presence implies the tool is in use even if the dependency manifest is sparse.
+3. **CI workflow steps.** `.github/workflows/*.yml`, `.gitlab-ci.yml`, `azure-pipelines.yml`, `.circleci/config.yml`, Jenkinsfiles, etc. — look for steps that invoke scanner CLIs, upload SARIF reports, or call hosted advisory APIs. Capture the workflow file path and the step snippet.
+4. **Lockfile audit metadata.** Lockfile headers, sidecar files, or in-lockfile fields that record advisory attestations, audit signatures, or scan timestamps (the exact field varies by ecosystem). Their presence indicates the lockfile is participating in an audit pipeline.
+5. **Dependabot config presence.** A `.github/dependabot.yml` (or platform-equivalent automated-dependency-update config) at the repo root indicates an inbound advisory stream that should be reported alongside scanner output.
+6. **Waiver / override / ignore blocks in dependency manifests.** Sections in `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, etc., that suppress or pin a specific advisory or vulnerable version range (e.g., `overrides`, `resolutions`, `[patch]`, ignore lists, advisory exception sections). These are first-class waiver mechanisms even when no dedicated scanner config file exists.
+
+The model is expected to recognize whatever the project actually uses regardless of whether it appears on any pre-enumerated list. Exemplar tool names may appear in surrounding commentary as illustrations, but the detection logic itself describes shape of evidence, not a hardcoded match list. If you encounter a tool you don't immediately recognize, search the project for its usage and infer its role from how it's invoked.
+
+**Monorepo / multi-service handling.**
+
+If step 1 detected a monorepo structure, repeat the scan inside each service/package directory the same way step 3C does. A single root-level scanner setup gets one `(root)` section; per-service scanners get per-service rows in the tables below.
+
+**Output:**
+
+Write the result to `<code-patterns-dir>/security-scanning.md` following this schema. Every section MUST appear; use a "None detected" placeholder row when no evidence is found in that category.
+
+```md
+# Security Scanning Patterns
+
+## Detected scanners
+
+| Scanner | Discovered check command | Discovered evidence source |
+|---------|--------------------------|----------------------------|
+| <descriptive name based on evidence, e.g., "audit script in package.json"> | <check-only invocation> | <file path + line/section where evidence was found> |
+| None detected | — | — |
+
+## Detected waiver mechanisms
+
+| Mechanism | Discovered file/section | Discovered evidence source |
+|-----------|-------------------------|----------------------------|
+| <descriptive name, e.g., "overrides block in package.json"> | <file path + section name> | <file path + line/section where evidence was found> |
+| None detected | — | — |
+
+## Detected CI integration
+
+| CI provider | Workflow file | Step snippet |
+|-------------|---------------|--------------|
+| <provider name, e.g., "GitHub Actions"> | <workflow file path> | <scanner invocation snippet copied from the step> |
+| None detected | — | — |
+
+## Advisory-DB freshness hints
+
+| Scanner | Where to find DB timestamp | Notes |
+|---------|----------------------------|-------|
+| <scanner descriptive name> | <per-scanner documented metadata location, e.g., lockfile audit-metadata field, scanner cache directory, scanner CLI version subcommand> | <free-form notes about freshness semantics> |
+| None detected | — | — |
+```
+
+**If no scanners, waivers, CI integrations, or advisory-DB hints are detected anywhere:** write a `security-scanning.md` containing each of the four section headers above with a single `None detected` row per table. The caller (init or ensure-config) will default the `Security scanning:` config field to `none` in this case.
+
+The discovered check command and evidence sources are *hints*, not authoritative. Downstream consumers (the `arn-code-batch-cve-scan` skill, the `arn-code-cve-analyst` agent) adapt to the actual environment. This step intentionally mirrors the shape of step 3C (linting) — treat the linting step as the design precedent when extending or revising this detection logic.
+
 ### 4. Compile architecture documentation
 
 Build the following architecture artifacts:
@@ -234,6 +293,8 @@ Output must follow the pattern file schemas. Read `${CLAUDE_PLUGIN_ROOT}/skills/
 Your output format is shared with the `arn-code-pattern-architect` agent. Both agents must produce structurally identical output so downstream consumers can use either interchangeably. For projects with a user-facing interface (frontend, fullstack, cli, tui, desktop, mobile), both agents produce a fourth `# UI Patterns` section including a `## Sketch Strategy`. For projects with a security surface, both agents produce a fifth `# Security Patterns` section.
 
 Linting and formatter detection is emitted as a separate file (`<code-patterns-dir>/linting.md`) following the schema in step 3C. It is produced regardless of project type; if neither linters nor formatters are detected, the file contains the single-line "No linters or formatters detected." marker so callers can default the `Linting:` config field to `none`.
+
+Security scanning detection is emitted as a separate file (`<code-patterns-dir>/security-scanning.md`) following the schema in step 3D. It is produced regardless of project type; if no scanners, waivers, CI integrations, or advisory-DB hints are detected, every section contains a `None detected` placeholder row so callers can default the `Security scanning:` config field to `none`.
 
 ## Rules
 

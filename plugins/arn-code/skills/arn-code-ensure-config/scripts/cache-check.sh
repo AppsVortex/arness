@@ -14,7 +14,7 @@ set -u
 PLUGIN_NAME="arn-code"
 SHORT_NAME="code"
 SCHEMA_VERSION=1
-EXPECTED_LABELS_COUNT=7
+EXPECTED_LABELS_COUNT=8
 CACHE_FILE=".arness/${PLUGIN_NAME}-ensure-config.local.json"
 
 # --- Helper: fail fast with reason ---

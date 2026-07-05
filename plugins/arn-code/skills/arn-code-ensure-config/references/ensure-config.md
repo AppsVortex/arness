@@ -128,9 +128,11 @@ Proceed to Layer 2.
 - `Code patterns`
 - `Docs directory`
 - `Linting`
+- `Security scanning`
+- `Security branch`
 - `Code agent model profile`
 
-Layer 2a reads CLAUDE.md. Layer 2b runs if no `## Arness` section exists. Layer 2c runs if **any** required field is missing — including `Linting`. Layer 2d only fast-paths when **every** required field above is present. The `Linting` field was added later than the other fields, so it is common for an existing `## Arness` block to have all the original fields but be missing `Linting` — that case must route to 2c, not fast-path through 2d.
+Layer 2a reads CLAUDE.md. Layer 2b runs if no `## Arness` section exists. Layer 2c runs if **any** required field is missing — including `Linting`, `Security scanning`, or `Security branch`. Layer 2d only fast-paths when **every** required field above is present. The `Linting`, `Security scanning`, and `Security branch` fields were added later than the other fields, so it is common for an existing `## Arness` block to have all the original fields but be missing these — that case must route to 2c, not fast-path through 2d.
 
 ### 2a. Read CLAUDE.md
 
@@ -178,6 +180,10 @@ Construct the `## Arness` section with all fields. If CLAUDE.md does not exist, 
 
 For the `Linting:` field: this is a fast-path defaulted to `skip` here. The first time a code-generating skill runs (executor, ship, etc.) the user will be prompted by Layer 2c-style logic to confirm. Do not invoke the codebase-analyzer here — keep this fast path lightweight. Setting `skip` is safe because it means "no lint gate"; the user can opt in later.
 
+For the `Security scanning:` field: same fast-path defaulting as `Linting:` — write `skip` here. Setting `skip` is safe because it means "no scan gate"; the first invocation of a scan skill (`/arn-code-batch-cve-scan`, `/arn-code-batch-cve-fix`) will route to Layer 2c-style logic to prompt the user to opt in. Do not invoke the codebase-analyzer here — keep this fast path lightweight.
+
+For the `Security branch:` field: write the auto-detected default branch here. Compute the value via `git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null` with silent fallback to `git rev-parse --abbrev-ref HEAD` if no `origin` remote is configured. The detected default (e.g., `main`, `master`, `develop`) covers ~99% of repos; users with non-standard GitFlow / trunk-based / renamed-default workflows update the value via Layer 2c on first scan-skill invocation. If both detection commands fail (no git repository), omit this field so Layer 2c prompts later.
+
 For the `Code agent model profile:` field: do NOT default it here. Leave the field absent so Layer 2c routes to the **Profile selection** procedure (see "Model profile field" section below) on the next ensure-config invocation. This guarantees the user is asked rather than silently set to `all-opus`. The corresponding `.arness/agent-models/code.md` file is created by the Profile selection procedure, not by this fast path.
 
 Fields to write:
@@ -192,11 +198,15 @@ Fields to write:
 - **Code patterns:** .arness
 - **Docs directory:** .arness/docs
 - **Linting:** skip
+- **Security scanning:** skip
+- **Security branch:** <detected-default>
 - **Git:** yes
 - **Platform:** github
 - **Issue tracker:** github
 - **Folder preference:** defaults
 ```
+
+The `<detected-default>` placeholder for `Security branch:` is replaced at write time with the value resolved from `git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null` (silent fallback `git rev-parse --abbrev-ref HEAD`). If both commands fail (no git repo), omit the `Security branch:` line entirely so Layer 2c prompts on next invocation.
 
 **Create directories:**
 
@@ -241,6 +251,51 @@ If the `Linting:` field is missing (separate logic — this field is not a direc
 
 The Linting field is intentionally handled separately from directory fields: directories have safe defaults; linting requires a real choice because it gates commits.
 
+If the `Security scanning:` field is missing (separate logic — this field is not a directory and its default depends on what's actually in the codebase, mirroring the `Linting:` handler above):
+
+1. Check whether `<code-patterns-dir>/security-scanning.md` already exists.
+   - If it exists, read it to determine the suggested default: contains `No scanners detected.` → suggest `None`; otherwise (one or more scanners listed) → suggest `Enabled`.
+   - If it does not exist, suggest `Enabled` (the user can then opt in to detection).
+2. Ask (using `AskUserQuestion`):
+
+   > **No security scanning setting found. How should Arness handle security scanning for this project? \<suggested default shown above\>**
+   > 1. **Enabled** — discover the project's scanners and use them for batch CVE workflows (`/arn-code-batch-cve-scan`, `/arn-code-batch-cve-fix`)
+   > 2. **None** — project has no security scanners configured
+   > 3. **Skip** — keep security scanning disabled (you can change this later)
+
+3. Apply the choice:
+   - **Enabled** — if `<code-patterns-dir>/security-scanning.md` does not exist, invoke `arn-code-codebase-analyzer` to generate it (the analyzer's security-scanning detection step produces this file, mirroring Phase 1's new step). Write `Security scanning: enabled` to the config block.
+   - **None** — write `Security scanning: none` to the config block. Do not invoke the analyzer.
+   - **Skip** — write `Security scanning: skip` to the config block. Do not invoke the analyzer.
+
+The Security scanning field is intentionally handled separately from directory fields and mirrors the `Linting:` flow because it gates CVE workflows: directories have safe defaults; security scanning requires a real choice because it controls the scan/fix surface.
+
+If the `Security branch:` field is missing (separate logic — this field is auto-detectable from the git remote, with a user override path):
+
+1. Auto-detect the default branch via Bash:
+   ```bash
+   detected=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+   if [ -z "$detected" ]; then
+     detected=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+   fi
+   ```
+   If both commands return empty (no git repo), use the literal string `main` as a last-resort fallback for the prompt — the user can pick a different value via option 2.
+2. Ask (using `AskUserQuestion`):
+
+   > **No security branch setting found. Detected default branch: `<detected>`. Use this for the CVE workflow?**
+   > 1. **Use `<detected>`** (Recommended) — scan and fix from the detected default branch
+   > 2. **Pick a different branch** — prompt for a branch name (e.g., `develop`, `release/2.x`)
+   > 3. **`auto` (re-detect every run)** — useful if your default branch can change between invocations
+   > 4. **Skip security workflow setup** — leave the field unset; first scan-skill invocation will re-prompt
+
+3. Apply the choice:
+   - **Use `<detected>`** — validate the branch exists on `origin`: `git ls-remote --exit-code origin <detected> >/dev/null 2>&1`. If the check fails, surface a one-line warning (`"Note: branch '<detected>' was not found on origin — writing the field anyway in case you push it shortly."`) but still write the value. Write `Security branch: <detected>` to the config block.
+   - **Pick a different branch** — prompt the user for a branch name as free text (NOT AskUserQuestion — this is open-ended). Validate via `git ls-remote --exit-code origin <name>`; warn-but-write on failure. Write `Security branch: <name>` to the config block.
+   - **`auto`** — write `Security branch: auto` to the config block. The scan skill resolves the actual branch via the same `git symbolic-ref` command on each invocation.
+   - **Skip** — do NOT write the field. The first invocation of a scan skill will re-route through this handler.
+
+The Security branch field is intentionally handled separately from directory fields because the safe default depends on the project's git remote topology, not a static value. Auto-detection covers the common case; the `auto` mode covers projects whose default branch changes.
+
 If the `Code agent model profile:` field is missing (separate logic — this field requires a real choice and downstream artifact copy):
 
 1. Run the **Profile selection** procedure documented in the "Model profile field" section below. The procedure handles the AskUserQuestion prompt, writes the field to the `## Arness` block, copies the chosen preset to `.arness/agent-models/code.md`, and records the SHA-256 checksum.
@@ -283,8 +338,8 @@ Read the `Platform` field from `## Arness`. If Platform is `none` or absent, ski
 If Platform is `github`:
 
 1. **Fast-path check:** Run via Bash: `gh label list --json name --jq '.[].name' | grep -c '^arness-'`
-2. If count is **7** (all labels exist): skip. No action needed.
-3. If count is **less than 7**: Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/platform-labels.md` for the full label definitions (names, colors, descriptions). Run `gh label create <name> --color <color> --description "<desc>" --force` for each of the 7 labels. The `--force` flag makes this idempotent — it updates existing labels and creates missing ones.
+2. If count is **8** (all labels exist): skip. No action needed.
+3. If count is **less than 8**: Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/platform-labels.md` for the full label definitions (names, colors, descriptions). Run `gh label create <name> --color <color> --description "<desc>" --force` for each of the 8 labels. The `--force` flag makes this idempotent — it updates existing labels and creates missing ones.
 4. This is a **silent operation** — no user prompt. Log only if labels were created: "Created N missing GitHub labels."
 
 ### 3c. Jira / Bitbucket
@@ -348,8 +403,8 @@ Entry-point skills invoke ensure-config as Step 0 on every workflow trigger (~30
 
 - `pluginVersion` differs from current (plugin upgrade)
 - `schemaVersion` differs from current (cache schema bump — silently invalidates)
-- Any of the 7 fingerprints differs from current state (user edited CLAUDE.md `## Arness`, agent-models file, gitignore, profile, etc.)
-- GitHub `arness-*` label count != 7 (when Platform=github and `gh` CLI available — checked inline in `cache-check.sh`, not stored in the JSON)
+- Any of the 7 fingerprints differs from current state (user edited CLAUDE.md `## Arness`, agent-models file, gitignore, profile, etc.). The `claudeMdArnessSection` fingerprint covers ALL `## Arness` fields including `Linting`, `Security scanning`, and `Security branch`, so changes to those fields invalidate the cache automatically — no separate fingerprint is needed.
+- GitHub `arness-*` label count != 8 (when Platform=github and `gh` CLI available — checked inline in `cache-check.sh`, not stored in the JSON)
 
 All invalidation paths trigger a cache miss, which causes the entry-point to read the full ensure-config.md and re-run Layers 1–3 — at the end of which this Layer 4 step writes a new cache.
 
