@@ -5,7 +5,7 @@ sidebar:
   order: 32
 ---
 
-Complete reference for all 35 Arness Code skills. For workflow-oriented documentation, see the [Arness Code plugin guide](../plugins/arn-code.md).
+Complete reference for all 37 Arness Code skills. For workflow-oriented documentation, see the [Arness Code plugin guide](../plugins/arn-code.md).
 
 ## Entry Points
 
@@ -75,6 +75,13 @@ The five first-citizen entry points are the primary way to interact with Arness 
 | `/arn-code-batch-implement` | Spawn parallel worktree-isolated background agents to implement multiple features simultaneously. Each worker is a full independent session operating in its own git worktree. | 1.0.0 |
 | `/arn-code-batch-merge` | Discover open batch PRs, analyze them for conflicts, determine an optimal merge order, and execute merges with user-guided conflict resolution. | 1.0.0 |
 | `/arn-code-batch-simplify` | Post-merge cross-feature quality pass that finds duplication and consolidation opportunities across independently implemented features. Uses the 3-reviewer pattern with cross-feature context. | 1.0.0 |
+
+## Security
+
+| Command | Description | Version |
+|---------|-------------|---------|
+| `/arn-code-batch-cve-scan` | Discover, triage, and ticket security advisories across project dependencies. Three modes: `interactive` (default), `proposal` (unattended — safe to schedule via Claude Code Routines), and `finalize` (steers a proposal into tickets). Dual-source discovery (GitHub Dependabot + locally-detected scanners), per-CVE triage via arn-code-cve-analyst, project-native waiver capture, pre-triage parent + per-group sub-issue ticketing on GitHub or Jira. Reads from the configured `Security branch:`. | 0.1.0 |
+| `/arn-code-batch-cve-fix` | Interactive-only skill that dispatches worktree-isolated per-group workers to apply CVE fixes, opens per-group PRs targeting the configured `Security branch:`, and includes a post-fix cleanup step that archives fully-resolved past scan proposals under `.arness/plans/CVE_archive/`. Includes a 5-condition auto-apply boundary gate for low-risk patch bumps. | 0.1.0 |
 
 ## Shipping & Documentation
 

@@ -100,6 +100,16 @@ Plan, build, and merge multiple features simultaneously using isolated worktrees
 
 - **`/arn-code-batch-simplify`** — Post-merge cross-feature deduplication and consolidation. Catches redundant abstractions and inconsistent patterns introduced when multiple features are developed in isolation.
 
+### Security Scanning
+
+Two skills plus a `Security scanning:` / `Security branch:` field pair in `## Arness` drive dependency-vulnerability discovery, triage, and batch resolution. Evidence-based scanner detection (no tool-name enumeration) means the workflow adapts to whatever scanners your project already uses — `npm audit`, `.trivyignore`, `.snyk`, Dependabot alerts, or any combination. The scan skill has three invocation modes so it is safe to schedule unattended via Claude Code Routines while preserving today's interactive ergonomics.
+
+- **`/arn-code-batch-cve-scan`** — Discover, triage, and ticket security advisories across project dependencies. Three modes: `interactive` (default), `proposal` (unattended — emits a `CVE_SCAN_PROPOSAL.md` artifact plus a stable stdout completion line so external schedulers can chain to notifications), and `finalize` (steers a proposal into tickets after human review). Per-CVE triage runs via the `arn-code-cve-analyst` agent, which uses narrowing-only grep-based reachability (never labels an unreached CVE as `safe`) and echoes back a scanner-output checksum for reproducibility. Reads dependency manifests from the configured `Security branch:` — never the working tree.
+
+- **`/arn-code-batch-cve-fix`** — Interactive-only skill that dispatches worktree-isolated per-group workers to apply CVE fixes, opens per-group PRs targeting the configured `Security branch:`, and includes a post-fix cleanup step that archives fully-resolved past scan proposals to `.arness/plans/CVE_archive/`. A 5-condition auto-apply boundary gate (patch bump + fresh CI + 7-day quarantine + non-postinstall + reachable) allows opt-in automation for the low-risk edge of the fix spectrum. Reuses the `arn-code-batch-implement` worker-instructions worktree isolation contract verbatim.
+
+For scheduling patterns, see [Scheduling CVE Scans](../../CLAUDE.md#scheduling-cve-scans) in the repo-level CLAUDE.md.
+
 ### Codebase Health and Maintenance
 
 - **`/arn-code-assess`** — Comprehensive technical assessment with 7 internal gates: scope definition, analysis, prioritization, spec generation, plan generation, execution, and shipping. Produces an actionable improvement plan.
@@ -152,6 +162,9 @@ Plan, build, and merge multiple features simultaneously using isolated worktrees
 | `/arn-code-batch-implement` | Parallel worktree-isolated implementation |
 | `/arn-code-batch-merge` | Analyze conflicts and merge batch PRs |
 | `/arn-code-batch-simplify` | Cross-feature deduplication after merge |
+| **Security** | |
+| `/arn-code-batch-cve-scan` | Three-mode CVE discovery + triage + ticketing; safe to schedule via Routines |
+| `/arn-code-batch-cve-fix` | Worktree-isolated per-group CVE fixes with 5-condition auto-apply gate and past-plan cleanup |
 | **Shipping & Docs** | |
 | `/arn-code-ship` | Commit, push, and create PR with structured messaging |
 | `/arn-code-document-project` | Generate developer documentation |
@@ -169,7 +182,7 @@ For full skill details including parameters and examples, see [Arness Code Skill
 
 ## Agents at Work
 
-Arness Code includes 16 specialist agents that handle different aspects of the pipeline. The **architect** develops specifications through iterative conversation. The **feature-planner** and **planner** translate specs into actionable plans. **Task-executor** agents run in parallel batches to implement tasks, with **task-reviewer** agents validating each batch before the next begins. The **codebase-analyzer** and **pattern-architect** ground every decision in your project's actual code and conventions. The **investigator** and **bug-fixer** handle diagnosis and repair. **Security-specialist**, **ux-specialist**, and **test-specialist** provide domain-specific review. The **batch-analyzer** and **batch-pr-analyzer** power the multi-feature parallel pipeline. The **sketch-builder** generates UI previews, and the **doctor** diagnoses pipeline issues.
+Arness Code includes 18 specialist agents that handle different aspects of the pipeline. The **architect** develops specifications through iterative conversation. The **feature-planner** and **planner** translate specs into actionable plans. **Task-executor** agents run in parallel batches to implement tasks, with **task-reviewer** agents validating each batch before the next begins. The **codebase-analyzer** and **pattern-architect** ground every decision in your project's actual code and conventions. The **drift-detector** verifies that older specifications still align with HEAD before planning against them. The **investigator** and **bug-fixer** handle diagnosis and repair. **Security-specialist**, **ux-specialist**, and **test-specialist** provide domain-specific review, and the **cve-analyst** performs per-CVE triage during security scan runs. The **batch-analyzer** and **batch-pr-analyzer** power the multi-feature parallel pipeline. The **sketch-builder** generates UI previews, and the **doctor** diagnoses pipeline issues.
 
 For full agent details, see [Arness Code Agents Reference](../reference/arn-code-agents.md).
 

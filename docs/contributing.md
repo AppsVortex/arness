@@ -27,8 +27,8 @@ arness/
 ├── plugins/
 │   ├── arn-code/                   # Core development plugin
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── skills/                # 35 pipeline skills
-│   │   ├── agents/                # 16 specialist agents
+│   │   ├── skills/                # 37 pipeline skills
+│   │   ├── agents/                # 18 specialist agents
 │   │   └── hooks/                 # Event handlers
 │   ├── arn-spark/                  # Greenfield exploration plugin
 │   │   ├── .claude-plugin/plugin.json
@@ -111,7 +111,9 @@ Never embed user-specific paths (e.g., `/home/username/...`) in committed files.
 
 ## Versioning
 
-When creating a PR, bump the `version` in the affected plugin's `.claude-plugin/plugin.json`:
+**Where the version lives.** The authoritative version for each plugin lives in the plugin's entry in `.claude-plugin/marketplace.json`. The `version` field is **intentionally omitted from `plugin.json`** across all three plugins. Anthropic's plugin docs explicitly warn against setting `version` in both places — a stale `plugin.json` version silently masks the marketplace value with no warning.
+
+When creating a PR, bump the `version` in the affected plugin's entry in `.claude-plugin/marketplace.json`:
 
 | Change type | Version bump | Example |
 |-------------|-------------|---------|
@@ -119,7 +121,22 @@ When creating a PR, bump the `version` in the affected plugin's `.claude-plugin/
 | New features, new skills/agents, significant behavior changes | Minor | 2.0.0 → 2.1.0 |
 | Breaking changes requiring re-init | Major | 2.1.0 → 3.0.0 |
 
-Also update the version in `.claude-plugin/marketplace.json` to match. Include both version bumps in the PR commit, not as separate commits.
+Include the version bump in the PR commit, not as a separate commit. Also add an entry to the plugin's `plugins/<plugin>/CHANGELOG.md` describing the change.
+
+### Release tagging convention
+
+After the PR merges, tag the merge commit using Anthropic's official plugin tag format: **`{plugin-name}--v{version}`** (double-hyphen `--v` — the format the `claude plugin tag` CLI produces and the format Claude Code's dependency constraint solver expects). Example: `arn-code--v3.8.0`.
+
+From inside the plugin directory, use the built-in tool:
+
+```bash
+claude plugin tag --dry-run   # verify the derived tag name
+claude plugin tag --push      # create the tag and push to origin
+```
+
+Manual fallback when `claude plugin tag` is unavailable: `git tag arn-code--v3.8.0 <merge-sha> && git push origin arn-code--v3.8.0`.
+
+Finally, create a GitHub Release from the new tag with the matching CHANGELOG section as the body.
 
 ## Testing Locally
 
@@ -140,6 +157,6 @@ claude --plugin-dir plugins/arn-infra
 2. Create a feature branch
 3. Make your changes
 4. Test locally with `claude --plugin-dir`
-5. Bump the version in the affected plugin's `plugin.json`
-6. Update `marketplace.json` if you bumped a plugin version
+5. Bump the plugin's `version` in `.claude-plugin/marketplace.json` (do not add `version` to `plugin.json` — see [Versioning](#versioning))
+6. Append a new entry to `plugins/<plugin>/CHANGELOG.md` describing the change
 7. Submit a PR with a clear description of what changed and why

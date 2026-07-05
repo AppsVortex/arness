@@ -35,7 +35,7 @@ arness/                                 # Marketplace repository
 When updating default report templates in `plugins/arn-code/skills/arn-code-save-plan/report-templates/default/`:
 
 1. Make changes to the template JSON files
-2. Bump `version` in the relevant plugin's `.claude-plugin/plugin.json`
+2. Bump the plugin's `version` in the corresponding entry of `.claude-plugin/marketplace.json` (the marketplace entry is the authoritative version source — `plugin.json` intentionally omits `version` per commit d3434de, see the "Versioning" section below)
 3. Test by running `arn-code-init` in a test project -- templates will be copied and fresh checksums generated
 4. Projects using the previous version will be prompted to update on next Arness skill invocation (behavior depends on their `Template updates` preference)
 
@@ -61,7 +61,7 @@ Every new agent must be wired into both model profile presets so that users on e
 1. Create the agent file at `plugins/<plugin>/agents/<agent-name>.md` with frontmatter (`model: opus`).
 2. Add the agent to BOTH `all-opus.md` and `balanced.md` presets in `plugins/<plugin>/skills/<plugin>-init/references/agent-models-presets/`. Decide the tier in `balanced` per the existing tiering principles (heavy reasoning → `opus`, operational/structured work → `sonnet`).
 3. Bump each preset's `# Version:` header (e.g., `1.0.0` → `1.1.0`).
-4. Bump the plugin version in the marketplace entry per the existing semver rules in the "Versioning" section below.
+4. Bump the plugin's `version` in the corresponding entry of `.claude-plugin/marketplace.json` per the semver rules in the "Versioning" section below.
 5. If the new agent is invoked from any skill, that dispatch site must include the model lookup per the "Dispatch convention" in `plugins/<plugin>/skills/<plugin>-ensure-config/references/ensure-config.md`.
 
 ### User Interaction Convention
@@ -78,13 +78,30 @@ Every new agent must be wired into both model profile presets so that users on e
 
 ## Versioning
 
-When creating a PR, always suggest bumping the `version` in the affected plugin's `.claude-plugin/plugin.json`. Follow semver:
+**Authoritative source:** the affected plugin's entry in `.claude-plugin/marketplace.json` carries the `version` field that Claude Code uses. The `version` field is **intentionally omitted from `plugin.json`** across all three plugins (per commit d3434de). Anthropic's plugin docs explicitly warn against setting `version` in both places — a stale `plugin.json` version silently masks the marketplace value.
+
+When creating a PR, always suggest bumping the `version` in the corresponding entry of `.claude-plugin/marketplace.json`. Follow semver:
 
 - **Patch** (0.1.0 → 0.1.1): Bug fixes, typo corrections, minor wording changes
 - **Minor** (0.1.0 → 0.2.0): New features, new skills/commands/agents, significant behavior changes to existing components
 - **Major** (0.2.0 → 1.0.0): Breaking changes that require users to re-run `arn-code-init` or manually update their `## Arness` config
 
 Include the version bump in the PR commit, not as a separate commit.
+
+### Release tagging convention
+
+Post-merge, each released plugin gets a git tag on the merge commit using Anthropic's official format: **`{plugin-name}--v{version}`** (double-hyphen `--v` — the format the `claude plugin tag` CLI produces and the format the dependency constraint solver expects).
+
+From inside the plugin directory, use the built-in tool:
+
+```bash
+claude plugin tag --dry-run   # verify derived tag name
+claude plugin tag --push      # create and push
+```
+
+Manual equivalent when `claude plugin tag` is unavailable: `git tag arn-code--v3.8.0 <merge-sha> && git push origin arn-code--v3.8.0`.
+
+Per-plugin CHANGELOGs live at `plugins/<plugin>/CHANGELOG.md` and mirror the release contents. Create a GitHub Release from each tag with the CHANGELOG section as the body.
 
 ## Linting Configuration
 
@@ -97,6 +114,28 @@ Each project's `## Arness` block carries a `Linting:` field with one of three va
 When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user with the same 3-option menu and, if `enabled` is chosen, invokes the codebase analyzer to generate `linting.md`.
 
 The analyzer is technology-agnostic: it does not pattern-match against a fixed list of tool names. Instead it scans evidence categories (dependency manifests, tool config files, script entry points, pre-commit-style runners) and recognizes whatever tooling the project actually uses. Linters and formatters are listed separately in `linting.md` because they have different semantics — formatters typically have both a check mode and a write mode, and the gate must invoke the check mode (`Discovered check command`) so files are never silently rewritten.
+
+## Security Scanning Configuration
+
+Each project's `## Arness` block carries two fields that together configure CVE discovery, triage, and resolution:
+
+- **`Security scanning:`** — one of `enabled | none | skip` (default `skip`).
+  - **`enabled`** — discover, triage, and ticket security advisories across project dependencies. The codebase analyzer detects per-service scanners, waiver mechanisms, and lockfile audit hooks and writes them to `<code-patterns-dir>/security-scanning.md` (sibling of `linting.md`). The `arn-code-batch-cve-scan` skill consumes this file to drive dual-source discovery (GitHub Dependabot + locally-detected scanners).
+  - **`none`** — project has no security scanners configured. Both CVE skills refuse to run.
+  - **`skip`** — user explicitly disabled the workflow. Same behavior as `none`; provided so the user can opt back in later. Default for new projects.
+- **`Security branch:`** — branch name or `auto` (default auto-detected from `git symbolic-ref --short refs/remotes/origin/HEAD`). This is the branch the scan reads from and the branch fix PRs target — never the working tree. Supports GitFlow, trunk-based, and projects with a renamed default branch.
+
+When either field is missing, `arn-code-ensure-config` (Layer 2c) lazy-prompts on the first invocation of a scan or fix skill: a 3-option menu for `Security scanning:` (same shape as the `Linting:` handler) and a follow-up menu for `Security branch:` (Use-detected / Pick-different / `auto` / Skip). If `enabled` is chosen, ensure-config invokes the codebase-analyzer to generate `security-scanning.md`.
+
+The analyzer is technology-agnostic — it does not pattern-match against a fixed list of scanner names. It scans evidence categories (dependency manifests declaring audit/security script entries, scanner config dotfiles, CI workflow steps invoking scanner CLIs, lockfile audit metadata, dependabot configs, waiver/override blocks in manifests) and recognizes whatever tooling the project actually uses.
+
+Two skills consume this configuration: `arn-code-batch-cve-scan` (discovery + triage + ticketing — three modes: `interactive`, `proposal`, `finalize`) and `arn-code-batch-cve-fix` (worktree-isolated per-group dependency bumps + per-group PRs targeting the configured `Security branch:`). Findings are tagged with the `arness-security` platform label.
+
+### Scheduling CVE Scans
+
+For unattended / recurring CVE scans, the recommended mechanism is **Claude Code Routines** (`claude.ai/code/routines`) — cloud-hosted, cron-like triggers with a 1-hour minimum interval. Configure a routine to invoke the scan skill with `--mode=proposal`; the skill emits a `CVE_SCAN_PROPOSAL.md` artifact and prints a single machine-readable completion line (`arness::cve-scan::proposal-ready path=<absolute-path>`) that the routine attaches to a notification. The user reviews the proposal interactively and runs the skill again with `--mode=finalize --proposal-path=<...>` to commit tickets and any approved waiver writes.
+
+For tool-agnostic scheduling — opencode, Aider, or external schedulers like cron / GitHub Actions — invoke via `claude -p` headless: `claude -p "/arn-code-batch-cve-scan --mode=proposal"`. Capture stdout and grep for the completion line. Both paths inherit the same idempotency and diff-mode behavior; the fix skill remains interactive-only (every PR is human-reviewed).
 
 ## Agent Model Profiles
 

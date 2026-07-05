@@ -19,6 +19,7 @@ Labels created during `/arn-code-init` when GitHub integration is detected. Thes
 | `arness-priority-medium` | `#fbca04` (yellow) | Medium priority | `/arn-code-create-issue`, `/arn-code-pick-issue`, `/arn-code-review-pr` |
 | `arness-priority-low` | `#c5def5` (light blue) | Low priority | `/arn-code-create-issue`, `/arn-code-pick-issue`, `/arn-code-review-pr` |
 | `arness-rejected` | `#e4e669` (olive) | Issue reviewed and rejected as invalid or out of scope | `/arn-code-pick-issue` |
+| `arness-security` | `#5319e7` (deep purple) | Security findings (CVEs, advisories) tracked via Arness | `/arn-code-batch-cve-scan`, `/arn-code-batch-cve-fix` |
 
 ### Plugin Repository Label
 
@@ -40,6 +41,7 @@ gh label create "arness-priority-high" --color "b60205" --description "High prio
 gh label create "arness-priority-medium" --color "fbca04" --description "Medium priority" --force
 gh label create "arness-priority-low" --color "c5def5" --description "Low priority" --force
 gh label create "arness-rejected" --color "e4e669" --description "Issue reviewed and rejected as invalid or out of scope" --force
+gh label create "arness-security" --color "5319e7" --description "Security findings (CVEs, advisories) tracked via Arness" --force
 ```
 
 ### Notes
@@ -68,6 +70,7 @@ Arness uses the following label names when creating and filtering Jira issues:
 | `arness-priority-high` | High priority | `/arn-code-create-issue`, `/arn-code-pick-issue`, `/arn-code-review-pr` |
 | `arness-priority-medium` | Medium priority | `/arn-code-create-issue`, `/arn-code-pick-issue`, `/arn-code-review-pr` |
 | `arness-priority-low` | Low priority | `/arn-code-create-issue`, `/arn-code-pick-issue`, `/arn-code-review-pr` |
+| `arness-security` | Security findings (CVEs, advisories) tracked via Arness | `/arn-code-batch-cve-scan`, `/arn-code-batch-cve-fix` |
 
 ### Issue Type Mapping
 

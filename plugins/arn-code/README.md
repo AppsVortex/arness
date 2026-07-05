@@ -1,6 +1,6 @@
 # Arness Code
 
-Structured, artifact-driven development pipeline for Claude Code. Every feature flows through spec, plan, structure, execute, review, and ship — producing a durable Markdown or JSON artifact at each stage that feeds the next. Three ceremony tiers (swift, standard, thorough) scale process to match scope, from a one-file fix to a cross-cutting refactor. Ships 25 pipeline skills and 14 specialist agents.
+Structured, artifact-driven development pipeline for Claude Code. Every feature flows through spec, plan, structure, execute, review, and ship — producing a durable Markdown or JSON artifact at each stage that feeds the next. Three ceremony tiers (swift, standard, thorough) scale process to match scope, from a one-file fix to a cross-cutting refactor. Also includes `arn-code-batch-cve-scan` and `arn-code-batch-cve-fix` for CVE discovery, triage, and batch resolution — safe to run unattended via Claude Code Routines. Ships 37 pipeline skills and 18 specialist agents.
 
 ## Install
 

@@ -1,11 +1,12 @@
 # Profile: all-opus
-# Version: 1.1.0
+# Version: 1.2.0
 
 arn-code-architect: opus
 arn-code-batch-analyzer: opus
 arn-code-batch-pr-analyzer: opus
 arn-code-bug-fixer: opus
 arn-code-codebase-analyzer: opus
+arn-code-cve-analyst: opus
 arn-code-doctor: opus
 arn-code-drift-detector: opus
 arn-code-feature-planner: opus
