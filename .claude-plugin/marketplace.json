@@ -18,7 +18,7 @@
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-code.md",
+      "homepage": "https://arness.appsvortex.com/plugins/arn-code/",
       "repository": "https://github.com/AppsVortex/arness",
       "license": "MIT",
       "keywords": [
@@ -51,7 +51,7 @@
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-spark.md",
+      "homepage": "https://arness.appsvortex.com/plugins/arn-spark/",
       "repository": "https://github.com/AppsVortex/arness",
       "license": "MIT",
       "keywords": [
@@ -83,7 +83,7 @@
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-infra.md",
+      "homepage": "https://arness.appsvortex.com/plugins/arn-infra/",
       "repository": "https://github.com/AppsVortex/arness",
       "license": "MIT",
       "keywords": [
