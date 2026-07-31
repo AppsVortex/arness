@@ -1,45 +1,115 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "arn-marketplace",
+  "description": "The compound-engineering harness for Claude Code — durable artifacts hand off from discovery through deployment. Spark (idea), Code (build), Infra (ship).",
+  "version": "1.1.0",
   "owner": {
-    "name": "AppsVortex"
-  },
-  "metadata": {
-    "description": "Three plugins for Claude Code — Spark (greenfield discovery), Code (development pipeline), Infra (infrastructure and deployment). Each stage produces durable Markdown/JSON artifacts the next consumes. MIT, local-only.",
-    "version": "1.0.0"
+    "name": "AppsVortex",
+    "email": "fbenigni@appsvortex.com",
+    "url": "https://github.com/AppsVortex"
   },
   "plugins": [
     {
       "name": "arn-code",
       "source": "./plugins/arn-code",
-      "description": "Core development pipeline for Claude Code — plan, implement, ship, review, and assess features with AI-assisted workflows. Progressive zero-config init with user profiling and expertise-aware recommendations. Three ceremony tiers (swift/standard/thorough) with severity-aware scope routing. Five entry points: arn-planning, arn-implementing, arn-shipping, arn-reviewing-pr, arn-assessing. Includes arn-code-sketch for UI preview, arn-code-swift for quick implementations, arn-code-standard for medium-complexity changes, arn-code-catch-up for retroactive documentation, and arn-code-batch-cve-scan / arn-code-batch-cve-fix for CVE discovery, triage, and batch resolution (three-mode scan is safe to schedule via Claude Code Routines).",
+      "description": "Artifact-driven pipeline — spec, plan, implement, review, ship, plus batch CVE scan & fix. Three ceremony tiers scale process to scope, from a one-file fix to a large refactor. 37 skills, 18 agents.",
       "version": "3.8.0",
       "author": {
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "category": "development"
+      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-code.md",
+      "repository": "https://github.com/AppsVortex/arness",
+      "license": "MIT",
+      "keywords": [
+        "development",
+        "pipeline",
+        "code-review",
+        "pull-request",
+        "cve",
+        "security",
+        "sdlc",
+        "workflow",
+        "compound-engineering",
+        "harness-engineering",
+        "context-engineering",
+        "agentic-workflows"
+      ],
+      "category": "development",
+      "tags": [
+        "development",
+        "code-review",
+        "automation"
+      ]
     },
     {
       "name": "arn-spark",
       "source": "./plugins/arn-spark",
-      "description": "Greenfield project exploration — product discovery with AI-assisted persona generation and competitive landscape research, brand naming through structured 4-step methodology with domain and trademark screening, architecture vision, use case authoring, project scaffolding, visual style exploration, static and interactive prototype validation, prototype preservation, feature extraction, visual testing strategy, stress testing suite, concept review, and issue tracker integration. Progressive zero-config init with user profiling and expertise-aware recommendations. Can operate standalone or alongside the arn-code core plugin.",
+      "description": "From raw idea to validated, feature-ready codebase — product discovery, adversarial spec review, brand naming, architecture vision, and interactive prototyping. 28 skills, 20 agents.",
       "version": "2.4.0",
       "author": {
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "category": "development"
+      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-spark.md",
+      "repository": "https://github.com/AppsVortex/arness",
+      "license": "MIT",
+      "keywords": [
+        "product-discovery",
+        "prototyping",
+        "greenfield",
+        "personas",
+        "naming",
+        "architecture",
+        "scaffolding",
+        "compound-engineering",
+        "harness-engineering",
+        "context-engineering",
+        "agentic-workflows"
+      ],
+      "category": "development",
+      "tags": [
+        "product",
+        "prototyping",
+        "discovery"
+      ]
     },
     {
       "name": "arn-infra",
       "source": "./plugins/arn-infra",
-      "description": "Infrastructure and deployment — containerization, IaC generation, deployment, CI/CD pipelines, environment management, secrets, monitoring, migration, and structured change management. Progressive zero-config init with user profiling and expertise-aware recommendations. Can operate standalone or alongside the arn-code core plugin.",
+      "description": "Infrastructure and deployment for Claude Code — containerization, IaC generation (OpenTofu, Pulumi, CDK), CI/CD pipelines, environments, secrets, and monitoring. Operates standalone or completes the arn-code pipeline. 25 skills, 10 agents. Experimental.",
       "version": "2.4.0",
       "author": {
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"
       },
-      "category": "infrastructure"
+      "homepage": "https://github.com/AppsVortex/arness/blob/main/docs/plugins/arn-infra.md",
+      "repository": "https://github.com/AppsVortex/arness",
+      "license": "MIT",
+      "keywords": [
+        "infrastructure",
+        "devops",
+        "docker",
+        "containers",
+        "iac",
+        "terraform",
+        "opentofu",
+        "pulumi",
+        "ci-cd",
+        "kubernetes",
+        "secrets",
+        "monitoring",
+        "compound-engineering",
+        "harness-engineering",
+        "context-engineering",
+        "agentic-workflows"
+      ],
+      "category": "infrastructure",
+      "tags": [
+        "devops",
+        "deployment",
+        "infrastructure"
+      ]
     }
   ]
 }
