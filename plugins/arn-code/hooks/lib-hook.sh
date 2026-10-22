@@ -9,7 +9,7 @@
 #   ARNESS_HOOKS=off                    disable every arn-code hook
 #   ARNESS_HOOKS_DISABLE=a,b            disable some: session, force-push, secrets, lint
 
-. "${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/skills/arn-code-ensure-config/scripts/lib.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/skills/arn-code-ensure-config/scripts/lib.sh"
 
 ARN_HOOK_INPUT=""
 

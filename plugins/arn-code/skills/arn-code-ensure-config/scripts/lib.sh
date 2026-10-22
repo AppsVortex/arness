@@ -12,7 +12,7 @@ ARN_EXPECTED_LABELS="arness-backlog arness-bug-issue arness-feature-issue arness
 
 ARN_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Script dir: <plugin-root>/skills/arn-code-ensure-config/scripts
-ARN_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$ARN_LIB_DIR/../../.." && pwd)}"
+ARN_PLUGIN_ROOT="$(cd "$ARN_LIB_DIR/../../.." && pwd)"   # own location; CLAUDE_PLUGIN_ROOT may name another plugin
 
 # Move to the project root so relative paths (CLAUDE.md, .arness/) resolve
 # even when Claude's cwd is a subdirectory.
