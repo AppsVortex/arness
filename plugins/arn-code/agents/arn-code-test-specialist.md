@@ -2,35 +2,18 @@
 name: arn-code-test-specialist
 description: >-
   This agent should be used when the user needs to run the project's test suite
-  and interpret results, or when the arness-assess skill needs test execution
+  and interpret results, or when the arn-code-assess skill needs test execution
   as a quality gate before shipping implementation changes.
 
   <example>
   Context: Invoked by arn-code-assess after all improvements are executed
   user: "assess codebase"
   assistant: (invokes arn-code-test-specialist to run full test suite before shipping)
-  <commentary>
-  The assess skill triggers this agent at the pre-ship test gate to verify
-  that all implemented changes pass the existing test suite.
-  </commentary>
   </example>
 
   <example>
   Context: User wants to run tests and get a structured report
   user: "run the tests and tell me what's failing"
-  <commentary>
-  Direct invocation to run the test suite and identify failures with
-  structured output including file paths and error details.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to verify test health before shipping
-  user: "run the full test suite and give me a report"
-  <commentary>
-  Pre-ship verification — user wants confirmation that all tests pass
-  before committing or creating a PR.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, Bash]
 model: opus

@@ -10,30 +10,12 @@ description: >-
   Context: Invoked by arn-code-execute-plan skill to execute a specific task
   user: "Execute task 5 — implement Phase 2 data layer"
   assistant: (spawns arn-code-task-executor for this single task)
-  <commentary>
-  The skill assigns one task. The executor reads pattern docs, executes the
-  task, generates its report, and returns a completion summary.
-  </commentary>
   </example>
 
   <example>
   Context: Invoked by arn-code-execute-plan skill to run tests for a phase
   user: "Execute task 8 — test Phase 3 API endpoints"
   assistant: (spawns arn-code-task-executor for this single testing task)
-  <commentary>
-  Single testing task. The executor reads all pattern docs first, writes and
-  runs the specified tests, self-heals any failures, and generates the report.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Invoked by arn-code-execute-task for a single implementation task
-  user: "execute task 3"
-  assistant: (spawns arn-code-task-executor for this single task from the task list)
-  <commentary>
-  Single task execution via arn-code-execute-task. The executor reads pattern
-  docs, implements the task, and generates its report.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, Edit, Write, Bash, LSP, SendMessage, TaskUpdate, TaskList, TaskGet]
 model: opus

@@ -2,7 +2,6 @@
 name: arn-code-plan
 description: >-
   This skill should be used when the user says "arness code plan", "arn-code-plan",
-  "plan this",
   "write a plan", "create plan", "implementation plan", "plan feature",
   "plan the spec", "plan from spec", "generate plan", "arness code plan FEATURE_X",
   "plan the bugfix", "plan bugfix", "make a plan",
@@ -11,6 +10,7 @@ description: >-
   presents it for review, and iterates on user feedback until approved.
   Produces a PLAN_PREVIEW file that feeds into /arn-code-save-plan.
 version: 1.1.0
+argument-hint: "[spec-name]"
 ---
 
 # Arness Plan
@@ -79,7 +79,7 @@ Then invoke `arn-code-codebase-analyzer` (existing codebase) or `arn-code-patter
 
 Specs may have been written days or weeks before being planned. The codebase moves in the meantime — files get renamed, modules refactored, frameworks swapped. Before invoking the planner, verify the spec's concrete references still hold against HEAD.
 
-Spawn the `arn-code-drift-detector` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Spawn the `arn-code-drift-detector` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 Verify whether the following specification still aligns with the current codebase.
@@ -118,7 +118,7 @@ The output file path is: `<plans-dir>/PLAN_PREVIEW_<spec-name>.md`
 
 **Check for existing PLAN_PREVIEW:** If a PLAN_PREVIEW file already exists at that path, inform the user: "A plan preview already exists for this spec: `<path>`. Would you like to regenerate it from scratch, or review the existing plan?" If review → skip to Step 5. If regenerate → proceed.
 
-Spawn the `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Spawn the `arn-code-feature-planner` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 You are generating an implementation plan for the following specification.
@@ -148,7 +148,7 @@ Generate a structured implementation plan and write it to the output file.
 Include `Spec: <specs-dir>/<spec-filename>` near the top for arn-code-save-plan linkage.
 ```
 
-Record the agent ID returned by the Task tool (needed for resume in Step 5b).
+Record the agent ID returned by the Agent tool (needed for resume in Step 5b).
 
 ---
 
@@ -236,7 +236,7 @@ After Step 5a completes (gate applied or skipped), go to Step 6.
 
 #### Step 5b: Iterate with Feedback
 
-Try to resume the planner agent using the Task tool's `resume` parameter with the stored agent ID:
+Try to resume the planner agent using the Agent tool's `resume` parameter with the stored agent ID:
 
 ```
 The user has reviewed the current plan and has the following feedback:
@@ -250,7 +250,7 @@ to the same file. Summarize what you changed.
 ```
 
 **If resume fails** (API error, agent ID no longer valid):
-Fall back to spawning a fresh `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Fall back to spawning a fresh `arn-code-feature-planner` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 
 ```
 You are revising an existing implementation plan based on user feedback.

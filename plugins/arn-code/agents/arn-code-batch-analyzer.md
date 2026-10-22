@@ -11,45 +11,13 @@ description: >-
   Context: Invoked by arn-code-batch-planning during parallel pre-analysis for a greenfield feature
   user: "batch planning"
   assistant: (invokes arn-code-batch-analyzer with greenfield feature F-003 context)
-  <commentary>
-  Batch planning spawns one batch-analyzer per selected feature in parallel.
-  Each analyzer reads the feature file, UC documents, and codebase patterns,
-  then writes a DRAFT_FEATURE_*.md to the specs directory.
-  </commentary>
   </example>
 
   <example>
   Context: Invoked by arn-code-batch-planning for a GitHub issue
   user: "batch planning"
   assistant: (invokes arn-code-batch-analyzer with GitHub issue #42 reference)
-  <commentary>
-  For GitHub issues, the analyzer fetches the issue via gh CLI, extracts
-  title/body/labels/comments, and produces a draft spec with moderate detail.
-  </commentary>
   </example>
-
-  <example>
-  Context: Invoked by arn-code-batch-planning for a Jira issue
-  user: "batch planning"
-  assistant: (invokes arn-code-batch-analyzer with Jira issue PROJ-42 reference)
-  <commentary>
-  For Jira issues, the analyzer fetches the issue via MCP, extracts
-  summary/description/acceptance-criteria, and produces a draft spec.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Invoked by arn-code-batch-planning for a plain description
-  user: "batch planning"
-  assistant: (invokes arn-code-batch-analyzer with a text description)
-  <commentary>
-  For plain descriptions, the analyzer produces a basic draft with architect
-  analysis and placeholder sections that the user will refine during exploration.
-  </commentary>
-  </example>
-
-  This is a background agent with no user interaction — it runs autonomously
-  and returns a structured file artifact.
 tools: [Read, Glob, Grep, Write, Bash]
 model: opus
 color: green

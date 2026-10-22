@@ -7,6 +7,7 @@ description: >-
   review. This is for ONE task only — for executing the full plan (all tasks),
   use arn-code-execute-plan instead.
 version: 0.4.0
+argument-hint: "[task-number-or-description]"
 ---
 
 # Arness Execute Task
@@ -99,9 +100,9 @@ Store the choice for the execution session.
 5. **Determine the executor model.** First check the per-phase upgrade override:
    - Read PROGRESS_TRACKER.json. Find the phase entry whose `implementation.taskId` matches the current task ID.
    - If `phase.implementation.modelOverride` is non-null (e.g., `"opus"`), use that value as the `model` parameter for this dispatch. Skip the standard agent-models lookup. Emit a one-line status to the user: `Phase <N> (<phaseTitle>) executor model: <override> (upgraded — complex phase per pipeline.complex-phase-upgrade)`.
-   - If `phase.implementation.modelOverride` is null or the field is missing, fall through to the standard lookup: pass the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
+   - If `phase.implementation.modelOverride` is null or the field is missing, fall through to the standard lookup: pass the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
 
-   Then spawn `arn-code-task-executor` via the Task tool with the determined model. Full context:
+   Then spawn `arn-code-task-executor` via the Agent tool with the determined model. Full context:
    - Task ID and full task description
    - Project name: `<PROJECT_NAME>`
    - Project folder path: `<plans-dir>/<PROJECT_NAME>/`
@@ -111,7 +112,7 @@ Store the choice for the execution session.
    - Specs directory path: `<specs-dir>/` (if relevant to the task)
    - Report template path: `<template-path>/`
    - Visual testing config (if configured): capture script path, compare script path, baseline directory, diff threshold
-6. Record the agent ID returned by the Task tool (needed for resume mode)
+6. Record the agent ID returned by the Agent tool (needed for resume mode)
 7. Wait for executor to complete
 
 ---
@@ -122,7 +123,7 @@ Store the choice for the execution session.
    - Report file path(s)
    - List of files created and modified
    - Visual capture directory path (if reported)
-2. Spawn `arn-code-task-reviewer` via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+2. Spawn `arn-code-task-reviewer` via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - Task ID and full task description
    - Project name and folder path
    - INTRODUCTION.md path
@@ -137,7 +138,7 @@ Store the choice for the execution session.
    - **pass** -- mark task as completed via TaskUpdate
    - **pass-with-warnings** -- append warnings to implementation report (`reviewFindings` section), mark task as completed via TaskUpdate
    - **needs-fixes** -- apply chosen feedback mode:
-     - **Resume mode:** resume the original executor agent (using its agent ID from Step 4.6, via the `resume` parameter of the Task tool) with review feedback, then re-run reviewer
+     - **Resume mode:** resume the original executor agent (using its agent ID from Step 4.6, via the `resume` parameter of the Agent tool) with review feedback, then re-run reviewer
      - **Fresh dispatch mode:** spawn a new executor with the review report + original context, then re-run reviewer
      - Maximum 2 review cycles, then escalate to user with full findings
 4. After marking the task as completed (pass or pass-with-warnings), update `PROGRESS_TRACKER.json`:

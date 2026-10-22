@@ -65,7 +65,7 @@ Let the user type a free-form description. This becomes the `user_description` f
 
 2. Check `gh auth status` — user must be authenticated to file issues.
 
-3. Read plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
+3. Get the plugin version by running `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`.
 
 4. Read `## Arness` config from the project's CLAUDE.md (if it exists).
 
@@ -75,7 +75,7 @@ If GitHub access is not available, offer an alternative: generate the diagnostic
 
 ### Step 4: Invoke arn-code-doctor
 
-Spawn the `arn-code-doctor` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Spawn the `arn-code-doctor` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The user's description of the issue
 - Project root path
 - `## Arness` config content (or "not configured")

@@ -1,11 +1,8 @@
 ---
 name: arn-code-ship
 description: >-
-  This skill should be used when the user says "ship it", "arness code ship",
-  "create PR", "open pull request", "push and PR", "commit and push",
-  "wrap up", "ship the feature", "ship the fix", "ready to ship",
-  "push changes", "finalize", "finish up", or wants
-  to commit, push, and optionally open a pull request. Guides through branching,
+  This skill should be used when the user says "arness code ship", "arn-code-ship",
+  or wants to commit, push, and optionally open a pull request. Guides through branching,
   staging, committing with meaningful messages, pushing, and PR creation.
   Works standalone or as the final Arness pipeline step. Do NOT use this for
   reviewing PRs — use /arn-code-review-pr for that.

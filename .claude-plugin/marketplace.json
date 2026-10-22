@@ -13,7 +13,7 @@
       "name": "arn-code",
       "source": "./plugins/arn-code",
       "description": "Artifact-driven pipeline — spec, plan, implement, review, ship, plus batch CVE scan & fix. Three ceremony tiers scale process to scope, from a one-file fix to a large refactor. 37 skills, 18 agents.",
-      "version": "3.8.0",
+      "version": "3.9.0",
       "author": {
         "name": "Fryderyk Benigni",
         "url": "https://github.com/fredcallagan"

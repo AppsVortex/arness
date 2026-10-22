@@ -172,7 +172,7 @@ If step 1 detected a monorepo structure (workspace declarations, multi-package d
 
 **Output:**
 
-Write the result to `<code-patterns-dir>/linting.md` following this schema:
+Return the content for `<code-patterns-dir>/linting.md` (the caller writes the file) following this schema:
 
 ```md
 # Linting Patterns
@@ -188,7 +188,7 @@ Write the result to `<code-patterns-dir>/linting.md` following this schema:
 (repeat per service/package)
 ```
 
-**If no linters or formatters are detected anywhere:** write a single-line `linting.md`:
+**If no linters or formatters are detected anywhere:** return a single-line `linting.md`:
 
 ```md
 # Linting Patterns
@@ -197,6 +197,28 @@ No linters or formatters detected.
 ```
 
 The caller (init or ensure-config) will default the `Linting:` config field to `none` in this case.
+
+**Machine-readable tooling (`tooling.json`).** Also return the content for `<code-patterns-dir>/tooling.json`, which the plugin's hooks read. One entry per section above. Only fill a command when you found a real entry point or a documented check-mode flag; leave it out otherwise. Use `{files}` where a list of relative file paths can be passed.
+
+```json
+{
+  "version": 1,
+  "services": [
+    {
+      "path": ".",
+      "extensions": ["<file extensions these tools cover, e.g. \".<ext>\">"],
+      "lintFiles": "<check-only lint command for given files, using {files}>",
+      "formatCheckFiles": "<check-only format command for given files, using {files}>",
+      "check": "<check-only command for the whole service>",
+      "testFiles": "<command that runs the given test files, using {files}>",
+      "test": "<command that runs the whole test suite>",
+      "owner": "arness | project"
+    }
+  ]
+}
+```
+
+Set `owner` to `project` when the project already runs these checks itself before commit (a pre-commit-style runner from evidence category 4); the hooks then skip them to avoid running the same check twice. `path` is relative to the repo root. When nothing is detected, return `{"version": 1, "services": []}`.
 
 The discovered check command is a *hint*, not authoritative. Downstream consumers (the executor's per-task lint, the ship pre-commit gate) are expected to adapt to the actual environment — for example, if the project's lockfile indicates a different package manager than the one referenced in the discovered command.
 
@@ -221,7 +243,7 @@ If step 1 detected a monorepo structure, repeat the scan inside each service/pac
 
 **Output:**
 
-Write the result to `<code-patterns-dir>/security-scanning.md` following this schema. Every section MUST appear; use a "None detected" placeholder row when no evidence is found in that category.
+Return the content for `<code-patterns-dir>/security-scanning.md` (the caller writes the file) following this schema. Every section MUST appear; use a "None detected" placeholder row when no evidence is found in that category.
 
 ```md
 # Security Scanning Patterns
@@ -255,7 +277,7 @@ Write the result to `<code-patterns-dir>/security-scanning.md` following this sc
 | None detected | — | — |
 ```
 
-**If no scanners, waivers, CI integrations, or advisory-DB hints are detected anywhere:** write a `security-scanning.md` containing each of the four section headers above with a single `None detected` row per table. The caller (init or ensure-config) will default the `Security scanning:` config field to `none` in this case.
+**If no scanners, waivers, CI integrations, or advisory-DB hints are detected anywhere:** return a `security-scanning.md` containing each of the four section headers above with a single `None detected` row per table. The caller (init or ensure-config) will default the `Security scanning:` config field to `none` in this case.
 
 The discovered check command and evidence sources are *hints*, not authoritative. Downstream consumers (the `arn-code-batch-cve-scan` skill, the `arn-code-cve-analyst` agent) adapt to the actual environment. This step intentionally mirrors the shape of step 3C (linting) — treat the linting step as the design precedent when extending or revising this detection logic.
 
@@ -292,7 +314,7 @@ Output must follow the pattern file schemas. Read `${CLAUDE_PLUGIN_ROOT}/skills/
 
 Your output format is shared with the `arn-code-pattern-architect` agent. Both agents must produce structurally identical output so downstream consumers can use either interchangeably. For projects with a user-facing interface (frontend, fullstack, cli, tui, desktop, mobile), both agents produce a fourth `# UI Patterns` section including a `## Sketch Strategy`. For projects with a security surface, both agents produce a fifth `# Security Patterns` section.
 
-Linting and formatter detection is emitted as a separate file (`<code-patterns-dir>/linting.md`) following the schema in step 3C. It is produced regardless of project type; if neither linters nor formatters are detected, the file contains the single-line "No linters or formatters detected." marker so callers can default the `Linting:` config field to `none`.
+Linting and formatter detection is returned as two separate files, `<code-patterns-dir>/linting.md` and `<code-patterns-dir>/tooling.json`, following step 3C. Mark each returned file with a heading line `## FILE: <name>` so the caller can split them. It is produced regardless of project type; if neither linters nor formatters are detected, the file contains the single-line "No linters or formatters detected." marker so callers can default the `Linting:` config field to `none`.
 
 Security scanning detection is emitted as a separate file (`<code-patterns-dir>/security-scanning.md`) following the schema in step 3D. It is produced regardless of project type; if no scanners, waivers, CI integrations, or advisory-DB hints are detected, every section contains a `None detected` placeholder row so callers can default the `Security scanning:` config field to `none`.
 

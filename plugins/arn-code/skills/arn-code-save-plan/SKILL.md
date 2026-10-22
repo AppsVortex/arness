@@ -10,6 +10,7 @@ description: >-
   conversation into an actionable phased project structure with implementation
   and testing plans.
 version: 2.0.0
+argument-hint: "[project-name]"
 ---
 
 # Arness Save Plan

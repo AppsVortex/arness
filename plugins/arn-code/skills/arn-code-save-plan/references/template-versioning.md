@@ -13,7 +13,7 @@ This procedure checks whether a project's report templates are up to date with t
 
 2. Read `Template version` from `## Arness` (e.g., `0.1.0`).
 
-3. Read `version` from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
+3. Get the plugin version by running `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`.
 
 4. If versions match -- templates are up to date. Skip to main workflow.
 

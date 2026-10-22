@@ -7,6 +7,7 @@ description: >-
   "catch up on commits", "document past work", "backfill records",
   or wants to retroactively document commits that were made outside the Arness pipeline.
 version: 1.0.0
+argument-hint: "[since-date-or-commit]"
 ---
 
 # Arness Catch-Up

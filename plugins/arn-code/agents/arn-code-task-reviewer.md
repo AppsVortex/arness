@@ -11,30 +11,12 @@ description: >-
   Context: Invoked by arn-code-execute-plan after executor completes Task 3
   user: "review the implementation of Task 3"
   assistant: (spawns arn-code-task-reviewer to validate implementation against patterns and acceptance criteria)
-  <commentary>
-  Executor completed Task 3. Reviewer reads pattern docs, re-runs tests,
-  checks acceptance criteria, and returns a verdict with findings.
-  </commentary>
   </example>
 
   <example>
   Context: Single task review requested by arn-code-execute-task skill
   user: "review task 5 implementation"
   assistant: (spawns arn-code-task-reviewer for focused validation)
-  <commentary>
-  Single-task review via arn-code-execute-task. Reviewer validates just this
-  task's implementation and returns findings.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Invoked after a failed task needs re-review
-  user: "re-review task 3 after executor applied fixes"
-  assistant: (spawns arn-code-task-reviewer to re-validate the fixed implementation)
-  <commentary>
-  Re-review after fixes. Reviewer checks whether previous error findings
-  are resolved and returns an updated verdict.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, Write, Bash, SendMessage, TaskUpdate, TaskList, TaskGet]
 model: opus

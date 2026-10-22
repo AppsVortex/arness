@@ -331,7 +331,7 @@ Pre-analyzing [K] thorough features in parallel...
 (Swift and standard features already have plans — skipping pre-analysis for those.)
 ```
 
-For each thorough feature, spawn a `arn-code-batch-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+For each thorough feature, spawn a `arn-code-batch-analyzer` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - `run_in_background: true`
 - The feature's input type and source-specific context:
   - Greenfield: feature ID, feature file path, vision dir, use cases dir
@@ -416,7 +416,7 @@ After feature-spec completes and the finalized spec file exists (FEATURE_*.md):
 
 1. Read the finalized spec file
 2. Derive the spec name from the filename
-3. Spawn the `arn-code-feature-planner` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+3. Spawn the `arn-code-feature-planner` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
    - `run_in_background: true`
    - The full spec file content (FEATURE_*.md or BUGFIX_*.md)
    - The spec file path (for the `Spec:` linkage line in the plan)
@@ -497,7 +497,7 @@ Options:
 
 If **Approve**: run the **Complex Phase Upgrade Gate** below (Step 3.5c) before invoking save-plan. After the gate completes, invoke `Skill: arn-code:arn-code-save-plan`. Proceed to the next feature's plan.
 
-If **Adjust**: let the user provide feedback. Spawn the `arn-code-feature-planner` agent via the Task tool (foreground), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with revision instructions and the current plan path. Re-present with the same 3 options. Repeat until approved or skipped.
+If **Adjust**: let the user provide feedback. Spawn the `arn-code-feature-planner` agent via the Agent tool (foreground), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with revision instructions and the current plan path. Re-present with the same 3 options. Repeat until approved or skipped.
 
 If **Skip**: remove this feature from the batch. Revert Feature Tracker status to `pending` if applicable. Continue with the next feature's plan.
 

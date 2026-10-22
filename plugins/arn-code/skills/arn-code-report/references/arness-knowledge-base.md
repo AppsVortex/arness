@@ -172,7 +172,7 @@ The thorough tier also produces a CHANGE_RECORD.json in the project root:
 | GitHub-dependent skills fail | gh CLI not installed, not authenticated, or no GitHub remote | Run `gh auth status` and `git remote -v` |
 | Labels not created during arn-code-init | gh auth lacks permission, or GitHub detection returned no | Check Git/GitHub fields in config, run `gh auth status` |
 | PR creation fails in arn-code-ship | Not on a feature branch, no commits ahead of main, or gh not authenticated | Check `git branch --show-current`, `git log main..HEAD`, `gh auth status` |
-| Template version mismatch | Plugin was updated but project templates are from an older version | Compare `Template version` in config with version in plugin.json |
+| Template version mismatch | Plugin was updated but project templates are from an older version | Compare `Template version` in config with the output of `plugin-version.sh` |
 | Pattern docs incomplete | arn-code-codebase-analyzer or arn-code-pattern-architect returned partial output | Check pattern doc files exist and have content |
 | Bitbucket skills fail | `bkt` not installed or not authenticated | Run `bkt --version` and `bkt auth status` |
 | Jira skills fail | Atlassian MCP server not configured or auth expired | Run `/mcp` to check server status, check `.mcp.json` |
@@ -348,6 +348,6 @@ Maintainers update this section when bumping the plugin version to document what
 
 ## Version Information
 
-- Plugin version is in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` (field: `version`)
+- Plugin version comes from `skills/arn-code-ensure-config/scripts/plugin-version.sh` (`plugin.json` has no `version`; the marketplace entry is authoritative)
 - Template version in user config tracks which plugin version templates were copied from
 - Skill versions are in each SKILL.md frontmatter (field: `version`)

@@ -80,7 +80,7 @@ Collect the final list: PR number, URL, feature name, CHANGE_RECORD path, platfo
 
 ## Step 2: Cross-PR Analysis (Delegated)
 
-Spawn the `arn-code-batch-pr-analyzer` agent via the Task tool in **foreground** (the results are needed before proceeding), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
+Spawn the `arn-code-batch-pr-analyzer` agent via the Agent tool in **foreground** (the results are needed before proceeding), passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback).
 
 Pass to the agent:
 - PR list (number, URL, feature name, CHANGE_RECORD path)

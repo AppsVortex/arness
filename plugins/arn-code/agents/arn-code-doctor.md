@@ -15,27 +15,6 @@ description: >-
   assistant: Invokes arn-code-doctor to check template directory, checksums file,
   and ## Arness config for template-related issues.
   </example>
-
-  <example>
-  Context: User reports strange behavior during plan execution
-  user: "arn-code-execute-plan kept skipping tasks that should have been unblocked"
-  assistant: Invokes arn-code-doctor to check task list state, dependency graph,
-  and execution flow against expected behavior.
-  </example>
-
-  <example>
-  Context: User reports arn-code-init didn't set up GitHub labels
-  user: "I ran arn-code-init but the GitHub labels weren't created"
-  assistant: Invokes arn-code-doctor to check Git/GitHub detection results,
-  gh auth status, and label creation step.
-  </example>
-
-  <example>
-  Context: arn-code-init upgrade flow needs a full health check
-  user: "upgrade arness" (triggers arn-code-init, which selects Upgrade)
-  assistant: Invokes arn-code-doctor for comprehensive check of all config fields,
-  directories, templates, checksums, Git/GitHub state, labels, and pattern schema.
-  </example>
 tools: [Read, Glob, Grep, Bash]
 model: opus
 color: red
@@ -88,7 +67,7 @@ Provided by the calling skill (`arn-code-report` or `arn-code-init`):
 ## Diagnostic Report
 
 **Skill(s) involved:** [skill names]
-**Plugin version:** [from plugin.json]
+**Plugin version:** [output of `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`]
 **Config state:** [relevant ## Arness fields, or "not configured"]
 
 ### Findings
@@ -111,7 +90,7 @@ Provided by the calling skill (`arn-code-report` or `arn-code-init`):
 - NEVER read or include user project source code, business logic, or sensitive data
 - ONLY check Arness-related configuration, directories, files, and state
 - Bash usage is LIMITED to these commands ONLY: `git status`, `git remote -v`, `gh auth status`, `gh label list`, `bkt --version`, `bkt auth status`, `ls` for directory checks. Do NOT run any other commands — especially not `claude` CLI commands which are slow or unavailable
-- Plugin installation is verified via `${CLAUDE_PLUGIN_ROOT}` (always set when running inside a plugin) and reading `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never via CLI commands
+- Plugin installation is verified via `${CLAUDE_PLUGIN_ROOT}` (always set when running inside a plugin) and running `skills/arn-code-ensure-config/scripts/plugin-version.sh` — never via CLI commands
 - Keep the diagnostic report factual and concise — under 30 lines
 - If no Arness-specific issues are found, say so explicitly
 - Do NOT suggest fixes to user code — only Arness workflow fixes

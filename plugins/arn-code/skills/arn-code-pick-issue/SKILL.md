@@ -13,6 +13,7 @@ description: >-
   for remote issue browsing. Do NOT use this for creating new issues — use
   /arn-code-create-issue for that.
 version: 1.3.0
+argument-hint: "[search-keywords]"
 ---
 
 # Arness Pick Issue
@@ -237,7 +238,7 @@ After the user has reviewed the issue details and agent assessment, offer option
 
 For brand-new issues with no prior feature file or spec, there is nothing to drift against — skip directly to Step 7.
 
-When the gate applies, spawn the `arn-code-drift-detector` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context (the existing feature file or sub-feature spec is the input spec):
+When the gate applies, spawn the `arn-code-drift-detector` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context (the existing feature file or sub-feature spec is the input spec):
 
 ```
 Verify whether the following feature file / spec still aligns with the current codebase.

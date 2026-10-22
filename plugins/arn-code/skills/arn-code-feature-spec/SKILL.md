@@ -108,7 +108,7 @@ Hold this context for use throughout the conversation. Do not dump all of it on 
 **Sketch detection:** Check if a `arness-sketches/` directory exists at the project root. If it does, scan for a subdirectory whose name matches the feature being specified (by feature name, F-NNN ID, or keyword overlap). If a matching sketch directory is found:
 1. Read `arness-sketches/<sketch-name>/sketch-manifest.json`
 2. If the manifest file cannot be read or parsed (malformed JSON, empty file, permission error), set `sketch_context_loaded = false` and proceed normally — treat as if no sketch exists.
-3. Verify the manifest has `componentMapping` and `composition` fields (Phase 1 enrichment)
+3. Verify the manifest has `componentMapping` and `composition` fields
 4. If both fields are present, set `sketch_context_loaded = true` and hold the manifest data (sketch directory path, manifest path, status, paradigm, componentMapping entries, composition metadata) for use in Step 5
 5. If the manifest exists but lacks `componentMapping` or `composition`, set `sketch_context_loaded = false` — the sketch predates the enrichment and cannot be referenced in the spec
 6. If no matching sketch directory is found, set `sketch_context_loaded = false` and proceed normally
