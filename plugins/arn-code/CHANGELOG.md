@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 Release tags follow Anthropic's official plugin tag convention: `arn-code--v{version}` (double-hyphen `--v`), produced by `claude plugin tag --push` from inside `plugins/arn-code/`.
 
-## [3.9.0] — Unreleased
+## [3.9.0] — 2026-10-25
 
 ### Fixed
 - **ensure-config cache never hit.** The checker and the writer hashed the `## Arness` section differently (trailing newline), so every run was a cache miss and the 3.7.0 fast path never worked. Both now share one library (`scripts/lib.sh`); Layer 4 writes the cache with `scripts/cache-write.sh` instead of hand-computed hashes. Cache schema bumped to 2 (one silent miss after upgrade).
