@@ -26,14 +26,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - name: Shell syntax
         run: |
           for f in plugins/arn-code/hooks/*.sh plugins/arn-code/skills/*/scripts/*.sh tests/arn-code/*.sh; do
-            /bin/bash -n "$f" || exit 1
+            bash -n "$f" || exit 1
           done
-      - name: Script and hook tests (system bash; 3.2 on macOS)
-        run: /bin/bash tests/arn-code/run-tests.sh
+      - name: Tool versions
+        run: |
+          bash --version | head -1
+          command -v python3 && python3 --version || echo 'no working python3'
+          command -v python && python --version || echo 'no python'
+          command -v jq || echo 'no jq'
+      - name: Script and hook tests (system bash; 3.2 on macOS; Git Bash on Windows)
+        run: bash tests/arn-code/run-tests.sh
