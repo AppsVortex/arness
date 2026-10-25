@@ -32,11 +32,13 @@ arn_hook_enabled() {
 }
 
 # arn_hook_json <dotted.path>: print a string field from the hook input.
+# Carriage returns are dropped (jq and Python on Windows end lines with CR LF).
 arn_hook_json() {
+  local py
   if command -v jq >/dev/null 2>&1; then
-    printf '%s' "$ARN_HOOK_INPUT" | jq -r ".$1 // empty" 2>/dev/null
-  elif command -v python3 >/dev/null 2>&1; then
-    printf '%s' "$ARN_HOOK_INPUT" | python3 -I -c '
+    printf '%s' "$ARN_HOOK_INPUT" | jq -r ".$1 // empty" 2>/dev/null | tr -d '\r'
+  elif py=$(arn_python); then
+    printf '%s' "$ARN_HOOK_INPUT" | "$py" -I -c '
 import json, sys
 try:
     d = json.load(sys.stdin)
@@ -48,8 +50,25 @@ if isinstance(d, str):
     print(d)
 elif d is not None:
     print(json.dumps(d))
-' "$1"
+' "$1" | tr -d '\r'
   fi
+}
+
+# arn_hook_path <dotted.path>: a path field from the hook input, in Git Bash form on Windows.
+arn_hook_path() {
+  arn_unix_path "$(arn_hook_json "$1")"
+}
+
+# arn_hook_rel_path <file>: print the file's path from the project root (the current
+# directory); false when it is outside. Physical paths, so a symlink on either side
+# (for example the macOS temp folder) still matches.
+arn_hook_rel_path() {
+  local root dir
+  root=$(pwd -P)
+  dir=$(cd "$(dirname "$1")" 2>/dev/null && pwd -P) || return 1
+  case "$dir/" in "$root"/*) ;; *) return 1 ;; esac
+  dir="${dir#"$root"}"; dir="${dir#/}"
+  printf '%s' "${dir:+$dir/}$(basename "$1")"
 }
 
 # arn_json_escape: stdin -> JSON string body (no surrounding quotes).
@@ -76,7 +95,7 @@ arn_hook_deny() {
 # arn_hook_enter_project: cd to the project root; false if not an Arness project.
 arn_hook_enter_project() {
   local cwd
-  cwd=$(arn_hook_json cwd)
+  cwd=$(arn_hook_path cwd)
   if [ -n "$cwd" ] && [ -d "$cwd" ]; then cd "$cwd" 2>/dev/null || true; fi
   arn_cd_project_root || return 1
   arn_is_arness_project

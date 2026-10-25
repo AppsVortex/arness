@@ -134,6 +134,26 @@ check "lint: skips other extensions" "$(lint notes.txt)" ""
 echo " " >> .arness/tooling.json
 check "lint: edited tooling.json needs new approval" "$(lint "a file.src")" ""
 
+# ---------------- Windows ----------------
+. "$CFG/lib.sh"
+check "windows: C:\\ path to Git Bash form" "$(arn_unix_path 'C:\Users\me\my proj')" "/c/Users/me/my proj"
+check "windows: D:/ path to Git Bash form" "$(arn_unix_path 'D:/work/x')" "/d/work/x"
+check "windows: other paths unchanged" "$(arn_unix_path /home/me)" "/home/me"
+mkdir -p "$WORK/stub"; printf '#!/bin/sh\necho "Python was not found; run without arguments to install from the Microsoft Store"\nexit 9009\n' > "$WORK/stub/python3"
+printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v python3)" > "$WORK/stub/python"; chmod +x "$WORK/stub/python3" "$WORK/stub/python"
+check "windows: broken python3 stub falls back to python" "$(PATH="$WORK/stub:$PATH" arn_python)" python
+bash "$HOOKS/tooling-approve.sh" >/dev/null
+case "$(hook_input "$PWD" "" "" "$PWD/a file.src" | PATH="$WORK/stub:$PATH" bash "$HOOKS/post-edit-lint.sh")" in *advisory*) ok "windows: lint works with a broken python3 stub" ;; *) nok "windows: lint works with a broken python3 stub" ;; esac
+if command -v cygpath >/dev/null 2>&1; then
+  W=$(cygpath -w "$PWD")
+  case "$(hook_input "$W" "" "" "$W\\a file.src" | bash "$HOOKS/post-edit-lint.sh")" in *advisory*) ok "windows: lint with C:\\ paths" ;; *) nok "windows: lint with C:\\ paths" ;; esac
+  check "windows: force-push blocked with a C:\\ cwd" "$(decision "$(hook_input "$W" "" "git push --force" "" | bash "$HOOKS/pre-bash.sh")")" deny
+  check "windows: secrets scan with a C:\\ cwd" "$(decision "$(echo "k = \"AKIA""ABCDEFGHIJKLMNOP\"" > w.txt && git add w.txt && hook_input "$W" "" 'git commit -m w' "" | bash "$HOOKS/pre-bash.sh")")" deny
+  git reset -q; rm -f w.txt
+  case "$(hook_input "$W" startup "" "" | bash "$HOOKS/session-start.sh")" in *Arness*) ok "windows: session start with a C:\\ cwd" ;; *) nok "windows: session start with a C:\\ cwd" ;; esac
+  check "windows: CLAUDE_PROJECT_DIR in C:\\ form" "$(cd / && CLAUDE_PROJECT_DIR="$W" bash -c '. "$1/lib.sh"; arn_cd_project_root && pwd -P' _ "$CFG")" "$(pwd -P)"
+fi
+
 echo
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

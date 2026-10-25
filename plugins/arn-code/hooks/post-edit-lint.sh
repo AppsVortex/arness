@@ -9,7 +9,7 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-hook.sh"
 
 arn_hook_read_input
-file=$(arn_hook_json tool_input.file_path)
+file=$(arn_hook_path tool_input.file_path)
 [ -n "$file" ] || exit 0
 arn_hook_enter_project || exit 0
 arn_hook_enabled lint || exit 0
@@ -19,18 +19,14 @@ tooling="$(arn_patterns_dir)/tooling.json"
 [ -f "$tooling" ] || exit 0
 [ -f .arness/tooling.local.sha ] || exit 0
 [ "$(arn_hash_file "$tooling")" = "$(cat .arness/tooling.local.sha)" ] || exit 0
-command -v python3 >/dev/null 2>&1 || exit 0
+py=$(arn_python) || exit 0
 
-# Compare physical paths: the project root or the edited path may go through a symlink.
-root=$(pwd -P)
-fdir=$(cd "$(dirname "$file")" 2>/dev/null && pwd -P) || exit 0
-file="$fdir/$(basename "$file")"
-case "$file" in "$root"/*) rel="${file#"$root"/}" ;; *) exit 0 ;; esac
+rel=$(arn_hook_rel_path "$file") || exit 0
 [ -f "$rel" ] || exit 0
 
 # Pick the deepest service whose path contains the file and whose extensions
 # match; print its file-level check commands, one per line, {files} filled in.
-cmds=$(python3 -I - "$tooling" "$rel" <<'PY'
+cmds=$("$py" -I - "$tooling" "$rel" <<'PY'
 import json, os, shlex, sys
 try:
     data = json.load(open(sys.argv[1]))

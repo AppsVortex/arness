@@ -18,12 +18,35 @@ ARN_PLUGIN_ROOT="$(cd "$ARN_LIB_DIR/../../.." && pwd)"   # own location; CLAUDE_
 # even when Claude's cwd is a subdirectory.
 arn_cd_project_root() {
   local root
-  if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR" ]; then
-    root="$CLAUDE_PROJECT_DIR"
+  if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$(arn_unix_path "$CLAUDE_PROJECT_DIR")" ]; then
+    root=$(arn_unix_path "$CLAUDE_PROJECT_DIR")
   else
     root=$(git rev-parse --show-toplevel 2>/dev/null) || root="$(pwd)"
   fi
   cd "$root" || return 1
+}
+
+# arn_python: print the command of a working Python 3, or nothing. On Windows,
+# "python3" is often a Microsoft Store stub that only prints a message; Python is "python".
+arn_python() {
+  local p
+  for p in python3 python; do
+    command -v "$p" >/dev/null 2>&1 || continue
+    "$p" -c 'import sys; sys.exit(sys.version_info[0] < 3)' >/dev/null 2>&1 && { printf '%s' "$p"; return 0; }
+  done
+  return 1
+}
+
+# arn_unix_path <path>: turn a Windows path (C:\x\y or C:/x/y) into the form Git Bash
+# uses (/c/x/y). Other paths are printed unchanged.
+arn_unix_path() {
+  case "$1" in
+    [A-Za-z]:[\\/]*|[A-Za-z]:)
+      if command -v cygpath >/dev/null 2>&1; then cygpath -u "$1"
+      else printf '%s' "$1" | awk '{ gsub(/\\/, "/"); print "/" tolower(substr($0, 1, 1)) substr($0, 3) }'
+      fi ;;
+    *) printf '%s' "$1" ;;
+  esac
 }
 
 arn_sha256() {
