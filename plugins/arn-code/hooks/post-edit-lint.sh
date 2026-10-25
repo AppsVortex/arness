@@ -21,7 +21,10 @@ tooling="$(arn_patterns_dir)/tooling.json"
 [ "$(arn_hash_file "$tooling")" = "$(cat .arness/tooling.local.sha)" ] || exit 0
 command -v python3 >/dev/null 2>&1 || exit 0
 
-root=$(pwd)
+# Compare physical paths: the project root or the edited path may go through a symlink.
+root=$(pwd -P)
+fdir=$(cd "$(dirname "$file")" 2>/dev/null && pwd -P) || exit 0
+file="$fdir/$(basename "$file")"
 case "$file" in "$root"/*) rel="${file#"$root"/}" ;; *) exit 0 ;; esac
 [ -f "$rel" ] || exit 0
 
