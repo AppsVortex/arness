@@ -1,15 +1,15 @@
 ---
 name: arn-code-review-pr
 description: >-
-  This skill should be used when the user says "review PR", "review pull
-  request", "check PR comments", "review PR feedback", "review PR 123",
-  "analyze PR comments", "validate PR review", "address PR feedback",
-  "fix PR issues", "what did the reviewer say", "review Bitbucket PR",
+  This skill should be used when the user says "arn-code-review-pr",
+  "review PR feedback", "analyze PR comments", "validate PR review",
+  "review Bitbucket PR",
   or wants to validate GitHub or Bitbucket
   PR review comments, categorize findings, and optionally connect back into
   the Arness pipeline for fixes. Do NOT use this for creating PRs (use
   arn-code-ship) or reviewing implementation quality (use arn-code-review-implementation).
 version: 1.1.0
+argument-hint: "[pr-number-or-url]"
 ---
 
 # Arness Review PR

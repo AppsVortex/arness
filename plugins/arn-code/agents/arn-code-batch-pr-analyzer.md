@@ -12,21 +12,12 @@ description: >-
   Context: Invoked by arn-code-batch-merge after discovering 5 open batch PRs
   user: "batch merge"
   assistant: (invokes arn-code-batch-pr-analyzer with PR list and CHANGE_RECORD paths)
-  <commentary>
-  Batch merge delegates the heavy analysis to this agent to keep the main
-  session context clean. The agent reads all PR diffs internally and returns
-  only a distilled summary.
-  </commentary>
   </example>
 
   <example>
   Context: Re-invoked after a PR is merged to refresh remaining PR status
   user: "batch merge"
   assistant: (re-invokes arn-code-batch-pr-analyzer with fewer PRs after one was merged)
-  <commentary>
-  After each merge, the agent is re-run with the remaining PRs to refresh
-  conflict and CI status. Fewer PRs = faster analysis.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, Bash]
 model: opus

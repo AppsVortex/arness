@@ -13,18 +13,6 @@ description: >-
   user: "/arn-code-plan FEATURE_websocket-notifications"
   assistant: (invokes arn-code-drift-detector to confirm the spec still matches current code before planning)
   </example>
-
-  <example>
-  Context: arn-code-pick-issue is routing an issue whose feature file already exists
-  user: "/arn-code-pick-issue"
-  assistant: (after user picks an issue with a pre-existing feature file, invokes arn-code-drift-detector to gate the hand-off)
-  </example>
-
-  <example>
-  Context: A spec was written weeks ago and the codebase has moved on
-  user: (selects an old FEATURE_X spec from the picker)
-  assistant: (drift detector runs, reports that two referenced files were renamed and one architectural claim no longer holds)
-  </example>
 tools: [Glob, Grep, Read, Bash]
 model: opus
 color: yellow

@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 Release tags follow Anthropic's official plugin tag convention: `arn-code--v{version}` (double-hyphen `--v`), produced by `claude plugin tag --push` from inside `plugins/arn-code/`.
 
+## [3.9.0] — 2026-10-25
+
+### Fixed
+- **ensure-config cache never hit.** The checker and the writer hashed the `## Arness` section differently (trailing newline), so every run was a cache miss and the 3.7.0 fast path never worked. Both now share one library (`scripts/lib.sh`); Layer 4 writes the cache with `scripts/cache-write.sh` instead of hand-computed hashes. Cache schema bumped to 2 (one silent miss after upgrade).
+- **Plugin version was read from `plugin.json`,** which has no `version` field. New `scripts/plugin-version.sh` resolves it from the marketplace entry or the installed cache path. Used by init, ensure-config, report, doctor and template versioning.
+- **Version check skipped for marketplace installs.** The cache looked for `marketplace.json` in the wrong place; it now also reads the version from the install path, so upgrades invalidate the cache.
+- **GitHub label check** listed only 30 labels, broke when a repo had extra `arness-*` labels, and printed a garbled count on zero matches. It now checks each expected label by name (`scripts/labels-missing.sh`) and does not fail the cache when `gh` is offline.
+- **Cache check portability:** works from a subdirectory, with Windows line endings, and without `jq`.
+- **Simplify revert could discard uncommitted work.** A failed finding was reverted with `git apply -R` of the whole working-tree diff. The applier now snapshots only the files it touches (`arn-code-simplify/scripts/snapshot.sh`) and restores only those. Applies to `arn-code-simplify` and `arn-code-batch-simplify`.
+- **`save_plan.sh`:** no longer picks the newest plan from other projects in `~/.claude/plans/`; rejects project names with path characters; refuses to guess between several `PLAN_PREVIEW` files; will not overwrite a different `SOURCE_PLAN.md` without `--force`.
+- 38 references used repo-relative `plugins/arn-code/...` paths that broke in user projects; they now use `${CLAUDE_PLUGIN_ROOT}`.
+- `arn-code-batch-cve-scan` description exceeded the 1,024-character limit; both CVE skills gained a `version`.
+- Simplify skills pointed to a "Dispatch convention" section in the wrong file.
+- The no-tracker CVE fallback told users to pass `--resolution-plan`, which `arn-code-batch-cve-fix` does not accept; it now says `--proposal-path`.
+- **`arn-code-help` could not see any files** in recent Claude Code versions: it allowed only Read, Glob and Grep, and the main session no longer has Glob or Grep. It now falls back to read-only shell commands; `arn-code-review-plan` names the same fallback.
+- `arn-code-codebase-analyzer` is read-only, but its text told it to write files. It now returns `linting.md`, `tooling.json` and `security-scanning.md` content and the caller writes them.
+
+### Added
+- **Plugin hooks** (`hooks/hooks.json`), **off by default**, active only in Arness projects and failing open. Turn them on per project with `- **Hooks:** on` in `## Arness` (`arn-code-init` asks), or per user with `ARNESS_HOOKS=on`; `ARNESS_HOOKS=off` always wins:
+  - `SessionStart`: config status line; after compaction, a pointer to the plan in progress.
+  - `PreToolUse` on Bash: blocks force-push (`--force-with-lease` allowed); blocks commits containing private keys, access tokens, key files or `.env` (`arness:allow-secret` marks a false positive).
+  - `PostToolUse` on edits: advisory file-level lint and format checks from the project's own commands, when `Linting: enabled`.
+  - Switches: `ARNESS_HOOKS=off`, `ARNESS_HOOKS_DISABLE=session,force-push,secrets,lint`.
+- **`tooling.json`:** machine-readable lint, format and test commands returned by the codebase analyzer next to `linting.md`. Hooks run its commands only after the user approves them (`hooks/tooling-approve.sh`); an edited file needs new approval. Language-agnostic: every command comes from the project.
+- `.arness/.*-tmp/` is added to the project `.gitignore` for scratch directories.
+- CI (`.github/workflows/arn-code-ci.yml`): static checks (`scripts/ci/validate-arn-code.py`) and script and hook tests (`tests/arn-code/run-tests.sh`) on Linux, macOS and Windows (Git Bash).
+- **Windows:** hooks and scripts accept `C:\` paths from Claude Code, drop carriage returns from tool output, and use `python` when `python3` is missing or is the Microsoft Store stub. Without `jq` or Python, hooks read their input with `awk`, so the force-push and secrets checks still work (lint needs Python and is skipped). Hooks also compare physical paths, so a symlinked project folder (such as the macOS temp folder) works.
+
+### Changed
+- Inner skills no longer repeat the trigger phrases of the entry points (`arn-shipping`, `arn-assessing`, `arn-reviewing-pr`, `arn-implementing`, `arn-planning`), so natural requests route through the entry points. Inner skills still trigger by name.
+- `arn-code-ensure-config` is hidden from the `/` menu (`user-invocable: false`). `arn-code-batch-cve-fix` runs only when typed (`disable-model-invocation: true`). Skills that take arguments show an `argument-hint`.
+- Long agent descriptions trimmed to under 800 characters; they are loaded into every session.
+- Docs say "Agent tool" instead of "Task tool" for subagent dispatch.
+
+### Compatibility
+No breaking changes. After upgrading: one silent ensure-config cache miss (schema 2), then real cache hits. Hooks are off until you turn them on, so nothing changes unless you opt in. The lint hook does nothing until `tooling.json` exists and is approved (next `arn-code-init`, or when `Linting` is set to `enabled`).
+
+### Known issues
+- arn-spark and arn-infra ship their own copies of the old `cache-check.sh` with the same hashing bug; fixed in their next releases.
+
 ## [3.8.0] — 2026-07-06
 
 ### Added

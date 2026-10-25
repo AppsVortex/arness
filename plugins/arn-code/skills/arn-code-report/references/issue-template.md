@@ -9,7 +9,7 @@ The issue body follows this structure:
 ```markdown
 ## Arness Code Report
 
-**Plugin version:** <version from plugin.json>
+**Plugin version:** <output of plugin-version.sh>
 **Skill(s) involved:** <skill names identified by the arn-code-doctor diagnostic>
 
 ### User Report

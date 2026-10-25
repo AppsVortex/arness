@@ -1,0 +1,48 @@
+name: arn-code CI
+
+on:
+  pull_request:
+    paths:
+      - "plugins/arn-code/**"
+      - ".claude-plugin/marketplace.json"
+      - "scripts/ci/**"
+      - "tests/arn-code/**"
+      - ".github/workflows/arn-code-ci.yml"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static checks (frontmatter, references, presets, hooks)
+        run: python3 scripts/ci/validate-arn-code.py
+
+  scripts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax
+        run: |
+          for f in plugins/arn-code/hooks/*.sh plugins/arn-code/skills/*/scripts/*.sh tests/arn-code/*.sh; do
+            bash -n "$f" || exit 1
+          done
+      - name: Tool versions
+        run: |
+          bash --version | head -1
+          command -v python3 && python3 --version || echo 'no working python3'
+          command -v python && python --version || echo 'no python'
+          command -v jq || echo 'no jq'
+      - name: Script and hook tests (system bash; 3.2 on macOS; Git Bash on Windows)
+        run: bash tests/arn-code/run-tests.sh

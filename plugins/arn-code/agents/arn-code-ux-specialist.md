@@ -10,24 +10,11 @@ description: >-
   Context: Invoked by arn-code-feature-spec-teams during team debate
   user: "feature spec teams: add a dashboard for analytics"
   assistant: (invokes arn-code-ux-specialist with feature idea + codebase context)
-  <commentary>
-  Feature has UI components. UX specialist joins the debate team to
-  advocate for user experience alongside the architect.
-  </commentary>
   </example>
 
   <example>
   Context: User needs UI design guidance for a specific feature
   user: "how should the user interface for the settings page work?"
-  </example>
-
-  <example>
-  Context: Backend project adding frontend for the first time
-  user: "we need to add a web UI to our API — what should the frontend look like?"
-  <commentary>
-  No existing frontend. UX specialist operates in recommendation mode,
-  proposing a UI stack and component patterns from scratch.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, LSP, WebSearch, SendMessage]
 model: opus

@@ -115,6 +115,18 @@ When the field is missing, `arn-code-ensure-config` (Layer 2c) prompts the user 
 
 The analyzer is technology-agnostic: it does not pattern-match against a fixed list of tool names. Instead it scans evidence categories (dependency manifests, tool config files, script entry points, pre-commit-style runners) and recognizes whatever tooling the project actually uses. Linters and formatters are listed separately in `linting.md` because they have different semantics — formatters typically have both a check mode and a write mode, and the gate must invoke the check mode (`Discovered check command`) so files are never silently rewritten.
 
+The analyzer also returns `<code-patterns-dir>/tooling.json`: the same commands in machine-readable form (per service: `path`, `extensions`, `lintFiles`, `formatCheckFiles`, `check`, `testFiles`, `test`, `owner`). The plugin hooks read it. Hooks run its commands only after the user approves them (`hooks/tooling-approve.sh` stores a hash in `.arness/tooling.local.sha`); any edit to the file needs a new approval. Entries with `owner: project` are skipped because the project already runs those checks itself.
+
+## Plugin Hooks (arn-code)
+
+`plugins/arn-code/hooks/hooks.json` registers hooks that are off by default (on with `- **Hooks:** on` in `## Arness` or `ARNESS_HOOKS=on`; `ARNESS_HOOKS=off` always wins), act only in projects with a `## Arness` section, and fail open when a tool is missing:
+
+- `SessionStart` → `session-start.sh`: config cache status line; after compaction, a pointer to the most recent plan's `PROGRESS_TRACKER.json`.
+- `PreToolUse` (Bash) → `pre-bash.sh`: blocks force-push; scans what a `git commit` will include for private keys, access tokens, key files and `.env`.
+- `PostToolUse` (Edit/Write/MultiEdit) → `post-edit-lint.sh`: advisory file-level lint from an approved `tooling.json`, when `Linting: enabled`.
+
+Hooks must stay language-agnostic: they never name a language or tool; every project-specific command comes from `tooling.json`. Switches: `ARNESS_HOOKS=off`, `ARNESS_HOOKS_DISABLE=session,force-push,secrets,lint`. Tests: `bash tests/arn-code/run-tests.sh`; static checks: `python3 scripts/ci/validate-arn-code.py` (both run in `.github/workflows/arn-code-ci.yml`).
+
 ## Security Scanning Configuration
 
 Each project's `## Arness` block carries two fields that together configure CVE discovery, triage, and resolution:

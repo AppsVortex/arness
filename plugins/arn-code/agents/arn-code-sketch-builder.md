@@ -17,24 +17,6 @@ description: >-
   user: "sketch the deploy command"
   assistant: (invokes arn-code-sketch-builder with feature context, paradigm=cli, CLI framework, and target module)
   </example>
-
-  <example>
-  Context: Invoked by arn-code-sketch skill to create an initial TUI sketch
-  user: "sketch the dashboard screen"
-  assistant: (invokes arn-code-sketch-builder with paradigm=tui, Textual framework, and target screen context)
-  </example>
-
-  <example>
-  Context: Invoked by arn-code-sketch skill during iteration
-  user: "move the form to the left and use a Card wrapper"
-  assistant: (invokes arn-code-sketch-builder with feedback, current sketch files, and component library context)
-  </example>
-
-  <example>
-  Context: Invoked by arn-code-sketch skill for promotion
-  user: "promote this sketch to the real codebase"
-  assistant: (invokes arn-code-sketch-builder to copy files, update paths, and integrate)
-  </example>
 tools: [Read, Write, Glob, Grep, Bash, Edit]
 model: opus
 color: purple

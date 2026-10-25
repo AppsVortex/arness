@@ -2,7 +2,7 @@
 name: arn-code-execute-plan
 description: >-
   This skill should be used when the user says "execute plan", "run the plan",
-  "start execution", "execute project", "execute all tasks", "run all tasks",
+  "execute project", "execute all tasks", "run all tasks",
   "run plan in parallel", "execute with review gates", or wants to execute
   a full structured project plan after tasks have been created via arn-code-taskify.
   This skill runs ALL tasks from the task list — for executing a single specific

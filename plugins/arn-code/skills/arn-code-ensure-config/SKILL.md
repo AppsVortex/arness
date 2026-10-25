@@ -9,6 +9,7 @@ description: >-
   arn-code-swift, arn-code-standard) which read the `references/step-0-fast-path.md`
   reference as Step 0 before proceeding with their workflow.
 version: 1.3.0
+user-invocable: false
 ---
 
 # Arness Code Ensure Config

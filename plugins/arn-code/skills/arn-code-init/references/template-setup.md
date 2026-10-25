@@ -14,7 +14,7 @@ This procedure covers copying report templates to a project and generating check
    ```
    sha256sum .arness/templates/*.json 2>/dev/null || shasum -a 256 .arness/templates/*.json
    ```
-4. Read the plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
+4. Get the plugin version by running `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`
 5. Write `.arness/templates/.checksums.json`:
    ```json
    {

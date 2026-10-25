@@ -1,8 +1,7 @@
 ---
 name: arn-code-standard
 description: >-
-  This skill should be used when the user says "standard", "standard mode",
-  "standard implementation", "arn-code-standard", "standard change",
+  This skill should be used when the user says "arn-code-standard", "standard change",
   "medium change", "standard feature", "standard fix",
   or wants a mid-ceremony implementation for a change that needs lightweight
   architectural context (spec-lite) and task-tracked execution but not the full

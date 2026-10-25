@@ -30,7 +30,7 @@ After Step 0 completes, extract the following from `## Arness`:
 
 ## Workflow
 
-### Step 0: Input Routing
+### Step 0.5: Input Routing
 
 Check the trigger message for swift or standard intent:
 

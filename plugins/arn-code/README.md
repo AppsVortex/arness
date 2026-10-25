@@ -12,6 +12,17 @@ Structured, artifact-driven development pipeline for Claude Code. Every feature 
 /plugin install arn-code@arn-marketplace
 ```
 
+## Hooks
+
+Since 3.9.0 the plugin ships hooks. They are **off until you turn them on**, and they act only in projects with a `## Arness` section in `CLAUDE.md`. Turn them on for a project with `- **Hooks:** on` in the `## Arness` section (`/arn-code-init` asks), or for yourself with `ARNESS_HOOKS=on` (for example in `.claude/settings.local.json` under `env`).
+
+- **Session start:** one status line about the Arness config; after a compaction, a pointer to the plan in progress.
+- **Before `git push`:** blocks `--force`, `-f` and `+refspec` (`--force-with-lease` is allowed).
+- **Before `git commit`:** blocks commits that contain private keys, access tokens, key files or `.env`. Add `arness:allow-secret` on a line to mark a false positive.
+- **After an edit:** when `Linting: enabled`, runs the project's own file-level lint and format checks from `.arness/tooling.json` and reports issues to Claude. Advisory only. The commands run only after you approve them during setup.
+
+`ARNESS_HOOKS=off` turns all hooks off, whatever the project says. Turn some off with `ARNESS_HOOKS_DISABLE=session,force-push,secrets,lint` (for example in `.claude/settings.local.json` under `env`).
+
 ## Documentation
 
 Full guide: [docs/plugins/arn-code.md](../../docs/plugins/arn-code.md) · [arness.appsvortex.com](https://arness.appsvortex.com/)

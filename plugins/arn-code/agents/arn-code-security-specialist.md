@@ -11,24 +11,11 @@ description: >-
   Context: Invoked by arn-code-feature-spec-teams during team debate
   user: "feature spec teams: add payment processing"
   assistant: (invokes arn-code-security-specialist with feature idea + codebase context)
-  <commentary>
-  Feature involves payment data. Security specialist joins the debate team to
-  advocate for secure-by-default design alongside the architect.
-  </commentary>
   </example>
 
   <example>
   Context: User needs security guidance for a specific feature
   user: "what security considerations should I have for this auth system?"
-  </example>
-
-  <example>
-  Context: Invoked by arn-code-feature-spec for lightweight security hints
-  user: "feature spec: add user registration with email verification"
-  assistant: (invokes arn-code-security-specialist with focused prompt after architect)
-  <commentary>
-  Feature involves authentication. Security specialist provides brief threat/mitigation list.
-  </commentary>
   </example>
 tools: [Read, Glob, Grep, LSP, WebSearch, SendMessage]
 model: opus

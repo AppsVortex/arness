@@ -101,10 +101,11 @@ expertise_aware: true | false
 
 3. Verify `.claude/*.local.md`, `.claude/settings.local.json`, and `.arness/*.local.*` are in the project's `.gitignore`:
    - Read `.gitignore` in the project root
-   - If `.gitignore` does not exist, create it with `.claude/settings.local.json`, `.claude/*.local.md`, and `.arness/*.local.*` as entries
+   - If `.gitignore` does not exist, create it with `.claude/settings.local.json`, `.claude/*.local.md`, `.arness/*.local.*` and `.arness/.*-tmp/` as entries
    - If `.gitignore` exists but does not contain `.claude/*.local.md`, append `.claude/*.local.md` on a new line
    - If `.gitignore` exists but does not contain `.claude/settings.local.json`, append `.claude/settings.local.json` on a new line
    - If `.gitignore` exists but does not contain `.arness/*.local.*`, append `.arness/*.local.*` on a new line
+   - If `.gitignore` exists but does not contain `.arness/.*-tmp/`, append `.arness/.*-tmp/` on a new line (scratch dirs such as `.simplify-tmp/` and `.cve-scan-tmp/`)
    - **Important:** Do NOT gitignore the entire `.claude/` directory — `.claude/settings.json` and other project-level Claude Code settings should remain committable for team sharing.
    - **Important:** Do NOT gitignore the entire `.arness/` directory — `.arness/preferences.yaml` (team technology preferences) and other Arness project files must remain committable.
 4. Optionally create `.claude/arness-profile.local.md` if the user wants project-specific adjustments
@@ -216,7 +217,7 @@ Run via Bash: `mkdir -p` for each configured directory (plans, specs, templates,
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/template-setup.md` and follow the Default Templates procedure. This copies report templates and generates SHA-256 checksums. This is a silent operation (~5 seconds).
 
-Read the plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` and write:
+Get the plugin version by running `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh` and write:
 - `Template version` field to `## Arness` with the plugin version
 
 ### 2c. If `## Arness` Exists But ANY Required Field Is Missing (including Linting)
@@ -245,7 +246,7 @@ If the `Linting:` field is missing (separate logic — this field is not a direc
    > 3. **Skip** — keep the lint gate disabled (you can change this later)
 
 3. Apply the choice:
-   - **Enabled** — if `<code-patterns-dir>/linting.md` does not exist, invoke `arn-code-codebase-analyzer` to generate it (the analyzer's step 3C produces this file). Write `Linting: enabled` to the config block.
+   - **Enabled** — if `<code-patterns-dir>/linting.md` or `<code-patterns-dir>/tooling.json` does not exist, invoke `arn-code-codebase-analyzer` and write the `linting.md` and `tooling.json` content it returns (its step 3C). Show the user the commands in `tooling.json` and ask (using `AskUserQuestion`): **Allow Arness hooks to run these check commands?** 1. Yes 2. No. On Yes, run `bash ${CLAUDE_PLUGIN_ROOT}/hooks/tooling-approve.sh`. The hooks only run commands from an approved `tooling.json`; any later edit to the file needs approval again. Write `Linting: enabled` to the config block.
    - **None** — write `Linting: none` to the config block. Do not invoke the analyzer.
    - **Skip** — write `Linting: skip` to the config block. Do not invoke the analyzer.
 
@@ -264,7 +265,7 @@ If the `Security scanning:` field is missing (separate logic — this field is n
    > 3. **Skip** — keep security scanning disabled (you can change this later)
 
 3. Apply the choice:
-   - **Enabled** — if `<code-patterns-dir>/security-scanning.md` does not exist, invoke `arn-code-codebase-analyzer` to generate it (the analyzer's security-scanning detection step produces this file, mirroring Phase 1's new step). Write `Security scanning: enabled` to the config block.
+   - **Enabled** — if `<code-patterns-dir>/security-scanning.md` does not exist, invoke `arn-code-codebase-analyzer` to generate it (the analyzer's security-scanning detection step produces this file). Write `Security scanning: enabled` to the config block.
    - **None** — write `Security scanning: none` to the config block. Do not invoke the analyzer.
    - **Skip** — write `Security scanning: skip` to the config block. Do not invoke the analyzer.
 
@@ -337,9 +338,9 @@ Read the `Platform` field from `## Arness`. If Platform is `none` or absent, ski
 
 If Platform is `github`:
 
-1. **Fast-path check:** Run via Bash: `gh label list --json name --jq '.[].name' | grep -c '^arness-'`
-2. If count is **8** (all labels exist): skip. No action needed.
-3. If count is **less than 8**: Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/platform-labels.md` for the full label definitions (names, colors, descriptions). Run `gh label create <name> --color <color> --description "<desc>" --force` for each of the 8 labels. The `--force` flag makes this idempotent — it updates existing labels and creates missing ones.
+1. **Fast-path check:** Run `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/labels-missing.sh`. It prints each missing `arness-*` label, one per line.
+2. If it prints nothing (all labels exist), or exits 3 (`gh` offline or not authenticated): skip. No action needed.
+3. If it prints label names: Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/platform-labels.md` for the label definitions (colors, descriptions). Run `gh label create <name> --color <color> --description "<desc>" --force` for each missing label. The `--force` flag makes this idempotent.
 4. This is a **silent operation** — no user prompt. Log only if labels were created: "Created N missing GitHub labels."
 
 ### 3c. Jira / Bitbucket
@@ -364,7 +365,7 @@ Entry-point skills invoke ensure-config as Step 0 on every workflow trigger (~30
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "validatedAt": "2026-05-10T12:34:56Z",
   "pluginVersion": "3.7.0",
   "fingerprints": {
@@ -382,29 +383,16 @@ Entry-point skills invoke ensure-config as Step 0 on every workflow trigger (~30
 
 ### Write procedure
 
-1. **Compute the 7 fingerprints** using `sha256sum` (Linux + Git Bash) || `shasum -a 256` (Mac BSD). For the `claudeMdArnessSection` hash, extract the `## Arness` block via `awk '/^## Arness$/{flag=1;next} /^## /{flag=0} flag' CLAUDE.md` then pipe to the hasher. For each file fingerprint: if the file does not exist, use the literal string `MISSING` instead of computing a hash.
+Run `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/cache-write.sh`.
 
-2. **Read plugin version** from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` if present (legacy), else from the marketplace's `marketplace.json` entry for `arn-code`. Use the empty string if neither is resolvable (cache will not enforce version match in that case).
-
-3. **Construct the JSON object** with the schema above. `validatedAt` is the current ISO 8601 UTC timestamp. `validationStatus` is `"pass"` (only written on successful Layers 1–3).
-
-4. **Write atomically** using a project-local temp file (NOT `/tmp/` — Windows compat):
-
-   ```bash
-   <json content> > .arness/arn-code-ensure-config.local.json.tmp
-   mv .arness/arn-code-ensure-config.local.json.tmp .arness/arn-code-ensure-config.local.json
-   ```
-
-   The `mv` is atomic on POSIX filesystems (Linux ext4, Mac APFS, Windows NTFS via Git Bash). On any Ctrl-C between the write and the mv, the partial file lives at `.local.json.tmp` and the previous cache (if any) is untouched.
-
-5. **Verify** by reading the file back and confirming valid JSON. If the verify fails, surface as a warning but do not block — the next invocation will simply cache-miss.
+The script computes every fingerprint with the same functions `cache-check.sh` uses, resolves the plugin version, and writes the file atomically through a project-local temp file. Do not write the cache JSON by hand: a hand-computed hash will not match the checker and every later run will miss. If the script exits non-zero, surface its stderr as a warning and continue — the next invocation will simply cache-miss.
 
 ### When the cache invalidates
 
 - `pluginVersion` differs from current (plugin upgrade)
 - `schemaVersion` differs from current (cache schema bump — silently invalidates)
 - Any of the 7 fingerprints differs from current state (user edited CLAUDE.md `## Arness`, agent-models file, gitignore, profile, etc.). The `claudeMdArnessSection` fingerprint covers ALL `## Arness` fields including `Linting`, `Security scanning`, and `Security branch`, so changes to those fields invalidate the cache automatically — no separate fingerprint is needed.
-- GitHub `arness-*` label count != 8 (when Platform=github and `gh` CLI available — checked inline in `cache-check.sh`, not stored in the JSON)
+- Any expected `arness-*` GitHub label is missing (when Platform=github and `gh` is available and authenticated — checked inline in `cache-check.sh`, not stored in the JSON)
 
 All invalidation paths trigger a cache miss, which causes the entry-point to read the full ensure-config.md and re-run Layers 1–3 — at the end of which this Layer 4 step writes a new cache.
 
@@ -488,27 +476,27 @@ Layer 2c runs steps 1-3 of the following whenever the field is present:
 5. **Profile YAML uses structured `technology_preferences`** with separate `languages`, `frameworks`, `databases`, `infrastructure` arrays. Do not store technologies as a flat string.
 6. **Profile data is non-sensitive** (role, technology preferences — no credentials or secrets). The `.claude/*.local.md` gitignore pattern protects against accidental commits of the project-level override while keeping `.claude/settings.json` committable for team sharing.
 7. **Folder preference coordination:** When setting `Folder preference`, this value is shared across all three plugins. If another plugin already set it, respect that value.
-8. **Template version field** must be set from the plugin version in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, not hardcoded.
+8. **Template version field** must be set from the output of `scripts/plugin-version.sh`, not hardcoded. `plugin.json` has no `version` field.
 
 ---
 
 ## Dispatch convention (agent model lookup)
 
-Every skill in this plugin that dispatches a subagent via the Task tool consults a per-plugin model profile to decide which model the agent runs on. The profile lives at `.arness/agent-models/code.md` (project-relative, NOT plugin-relative — this path is project-rooted while plugin assets use `${CLAUDE_PLUGIN_ROOT}` per Pattern 8 in INTRODUCTION.md). The file is created during init and is one of the presets shipped under `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/agent-models-presets/`.
+Every skill in this plugin that dispatches a subagent via the Agent tool consults a per-plugin model profile to decide which model the agent runs on. The profile lives at `.arness/agent-models/code.md` (project-relative, NOT plugin-relative — this path is project-rooted while plugin assets use `${CLAUDE_PLUGIN_ROOT}`). The file is created during init and is one of the presets shipped under `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-init/references/agent-models-presets/`.
 
 ### Lookup procedure (apply at every dispatch site)
 
 1. **Read `.arness/agent-models/code.md`** (project-relative).
-2. **If the file is missing or unparseable:** omit the `model:` parameter when invoking the Task tool. The agent's frontmatter default (`opus`) applies. Do not surface an error — fallback is silent.
+2. **If the file is missing or unparseable:** omit the `model:` parameter when invoking the Agent tool. The agent's frontmatter default (`opus`) applies. Do not surface an error — fallback is silent.
 3. **Look up the agent's name** (e.g., `arn-code-feature-planner`, `arn-code-task-executor`) in the file's mapping.
-4. **If the agent name is found:** pass the mapped value (e.g., `opus`, `sonnet`, `haiku`) as the Task tool's `model` parameter. This overrides the agent's `model:` frontmatter.
+4. **If the agent name is found:** pass the mapped value (e.g., `opus`, `sonnet`, `haiku`) as the Agent tool's `model` parameter. This overrides the agent's `model:` frontmatter.
 5. **If the agent name is NOT found in the file:** omit the `model:` parameter — frontmatter fallback applies. This keeps user-edited `custom` profiles forward-compatible: agents added to the plugin after the user customized their profile still run on their frontmatter default (`opus`) until the user adds them to the file.
 6. **Multi-agent parallel dispatches:** apply the lookup to each agent independently. A single instruction that spawns three agents in parallel produces three independent lookups, each potentially passing a different `model:` value.
-7. **Resume-mode dispatches** (calls that pass an existing agent ID via the Task tool's `resume` parameter): do NOT consult the profile. Resume calls inherit the model from the original invocation. Dispatch sites that resume an existing agent do not include the model-lookup phrasing.
+7. **Resume-mode dispatches** (calls that pass an existing agent ID via the Agent tool's `resume` parameter): do NOT consult the profile. Resume calls inherit the model from the original invocation. Dispatch sites that resume an existing agent do not include the model-lookup phrasing.
 
 ### Why this design
 
-- **Native Task tool support.** The Task tool's `model:` parameter takes precedence over agent frontmatter (Pattern 2 in INTRODUCTION.md). No wrapper or shim is needed.
-- **Self-documenting.** Every dispatch site explicitly references this convention, so the lookup behavior is visible at the point of dispatch rather than buried in a global default. A static grep for `via the Task tool` confirms coverage.
+- **Native Agent tool support.** The Agent tool's `model:` parameter takes precedence over agent frontmatter. No wrapper or shim is needed.
+- **Self-documenting.** Every dispatch site explicitly references this convention, so the lookup behavior is visible at the point of dispatch rather than buried in a global default. A static grep for `"Dispatch convention" for fallback` lists every model-looked-up dispatch site (resume-mode sites intentionally omit it).
 - **Graceful degradation.** Missing file, missing agent entry, and unparseable content all fall back to frontmatter — there is no failure mode where dispatch hangs or errors on a config issue.
-- **Single source of truth.** `.arness/agent-models/code.md` is the only place a user edits to change behavior across all arn-code dispatches. The file is template-managed (Pattern 6) so version bumps, drift detection, and the `Template updates: ask | auto | manual` policy all apply.
+- **Single source of truth.** `.arness/agent-models/code.md` is the only place a user edits to change behavior across all arn-code dispatches. The file is template-managed so version bumps, drift detection, and the `Template updates: ask | auto | manual` policy all apply.

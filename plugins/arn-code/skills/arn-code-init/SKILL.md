@@ -27,7 +27,7 @@ Read the project's CLAUDE.md and look for a `## Arness` section. If no CLAUDE.md
 
 **If the section exists:**
 1. Parse all config fields from the existing `## Arness` block
-2. Read the current plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
+2. Get the current plugin version by running `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`
 3. Show the user their current configuration and version comparison:
    - Config template version vs current plugin version
    - Number of config fields present vs expected
@@ -126,7 +126,7 @@ Check if the project uses Git, determine the code hosting platform, and identify
 
 ### Step 3A: Analyze Codebase Patterns
 
-Invoke the `arn-code-codebase-analyzer` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Invoke the `arn-code-codebase-analyzer` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - The detected project type (backend/frontend/fullstack — infer from the codebase)
 - The source root path (infer from project structure)
 - Any framework hint (infer from manifests/markers)
@@ -166,7 +166,7 @@ Be conversational, not rigid. Skip questions where the answer is obvious from pr
 
 ### Step 3B-2: Generate Recommended Patterns
 
-Invoke the `arn-code-pattern-architect` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with all the technology choices gathered above.
+Invoke the `arn-code-pattern-architect` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback), with all the technology choices gathered above.
 
 The agent returns recommended code patterns, testing patterns, and architecture — with concrete best-practice examples marked as "Recommended" rather than real file references.
 
@@ -244,6 +244,7 @@ Write the files to the chosen pattern docs location:
    handling, sensitive data). Do not write it for projects with no security surface (pure
    utility libraries, CLI tools with no auth/API/user input).
 6. **`linting.md`** — Linter detection per service/package, produced by the codebase analyzer (step 3C of `arn-code-codebase-analyzer`). Always write this file: if no linters were detected, the analyzer returns the single-line "No linters detected." marker, which is what gets written. The lint configuration question in Step 8b uses this file to suggest a default.
+7. **`tooling.json`** — Machine-readable check and test commands, also returned by the analyzer's step 3C. Always write this file. If the user picks **Enabled** in Step 8b, show its commands and ask (using `AskUserQuestion`): **Allow Arness hooks to run these check commands?** 1. Yes 2. No. On Yes, run `bash ${CLAUDE_PLUGIN_ROOT}/hooks/tooling-approve.sh`.
 
 ### Step 7: Configure Plans and Templates
 
@@ -311,6 +312,10 @@ The field write in step 3 of the procedure is captured for the CLAUDE.md write i
 
 Record the chosen profile for the config write in Step 9.
 
+### Step 8d: Turn On Arness Hooks
+
+Arness hooks are off until the project or the user turns them on. Ask (using `AskUserQuestion`): **Turn on Arness hooks for this project?** 1. Yes (Recommended) — session status line, block force-push, block commits with secrets, lint after edits when Linting is enabled 2. No, keep them off. Record `on` or `off` for the config write in Step 9. The field is shared with everyone who uses this repository; one person can override it with `ARNESS_HOOKS=on` or `ARNESS_HOOKS=off`.
+
 ---
 
 ### Step 9: Persist Configuration to CLAUDE.md
@@ -324,12 +329,13 @@ Write (or update) the `## Arness` section in the project's CLAUDE.md:
 - **Specs directory:** [chosen-specs-path]
 - **Report templates:** default | custom
 - **Template path:** [relative-path, e.g., .arness/templates]
-- **Template version:** [version from plugin.json]
+- **Template version:** [output of plugin-version.sh]
 - **Template updates:** ask | auto | manual
 - **Code patterns:** [chosen-pattern-docs-path]
 - **Docs directory:** [chosen-docs-path]
 - **Linting:** enabled | none | skip
 - **Code agent model profile:** all-opus | balanced | custom
+- **Hooks:** on | off
 - **Git:** yes | no
 - **Platform:** github | bitbucket | none
 - **Issue tracker:** github | jira | none
@@ -423,11 +429,11 @@ Entered from Step 1 when the user chooses **Upgrade**. Diagnoses gaps using the 
 
 ### Step U1: Run Diagnostic
 
-Invoke the `arn-code-doctor` agent via the Task tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `plugins/arn-code/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
+Invoke the `arn-code-doctor` agent via the Agent tool, passing the model from `.arness/agent-models/code.md` as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback). Context:
 - Description: "Comprehensive health check for arn-code-init upgrade. Check ALL categories: config fields, directories, template files, checksums, Git/Platform/Issue tracker state, platform labels, and pattern doc schema compliance. Use only Read/Glob/Grep and the allowed Bash commands (git status, git remote -v, gh auth status, gh label list, bkt --version, bkt auth status, ls). Do NOT run claude CLI commands."
 - Project root path
 - The parsed `## Arness` config content
-- Plugin version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
+- Plugin version from `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/scripts/plugin-version.sh`
 - Instruction to read the knowledge base at `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-report/references/arness-knowledge-base.md`
 
 The agent should check for:
@@ -507,6 +513,7 @@ For each missing config field that needs a user-provided value, ask **one focuse
 | Report templates | "Use default or custom report templates?" | `default` | Step 7 |
 | Template updates | "How should Arness handle template updates?" | `ask` | Step 7 |
 | Docs directory | "Where should Arness save project documentation?" | `.arness/docs/` | Step 8 |
+| Hooks | "Turn on Arness hooks for this project?" | `on` | Step 8d |
 | Jira site | "What is your Atlassian site URL? (e.g., mycompany.atlassian.net)" | none | Step 3 |
 | Jira project | "Which Jira project should Arness use?" | list via MCP and pick | Step 3 |
 

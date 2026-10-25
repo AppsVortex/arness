@@ -116,7 +116,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-batch-simplify/references/cross-feat
 
 Build the `{cross_feature_context}` block from the data collected in Step 2 — listing each feature's name, its files, and its change record path.
 
-Dispatch three Agent tool calls **in a single message** so they run in parallel. Each call passes the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-reviewer`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` "Dispatch convention" for fallback behavior). The three reviewers share the same synthetic name — apply the multi-agent rule by passing the looked-up value to each call independently. Note: `arn-code-simplify-reviewer` is shared with `arn-code-simplify` since both skills perform the same conceptual review work.
+Dispatch three Agent tool calls **in a single message** so they run in parallel. Each call passes the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-reviewer`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback behavior). The three reviewers share the same synthetic name — apply the multi-agent rule by passing the looked-up value to each call independently. Note: `arn-code-simplify-reviewer` is shared with `arn-code-simplify` since both skills perform the same conceptual review work.
 
 1. **Code Reuse Reviewer** — fill the cross-feature-prompts.md template with the file list, pattern documentation, and cross-feature context. Instruct the agent to focus on duplicated logic, missed utilities, and copy-paste patterns, with special attention to utilities created independently by different features.
 
@@ -211,7 +211,7 @@ The user may also change individual finding statuses (e.g., "approve SIM-001 but
 
 The orchestrator pre-sorts the approved findings by dependency order (if finding B depends on finding A's changes, A comes first), then dispatches a single anonymous Agent call to perform the apply work. The model is configurable via the agent-models config.
 
-**Dispatch the applier as an anonymous Agent tool call**, passing the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-applier`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/step-0-fast-path.md` "Dispatch convention" for fallback behavior). Do NOT add any tool restriction — the applier inherits `Edit`, `Write`, `Bash`, `Read`, `Grep`, `Glob` from the orchestrator's toolbelt by default, and needs all of them. Note: `arn-code-simplify-applier` is shared with `arn-code-simplify` since both skills perform the same conceptual apply work; the cross-feature scope is conveyed via the findings list itself.
+**Dispatch the applier as an anonymous Agent tool call**, passing the model from `.arness/agent-models/code.md` (look up `arn-code-simplify-applier`) as the `model` parameter (see `${CLAUDE_PLUGIN_ROOT}/skills/arn-code-ensure-config/references/ensure-config.md` "Dispatch convention" for fallback behavior). Do NOT add any tool restriction — the applier inherits `Edit`, `Write`, `Bash`, `Read`, `Grep`, `Glob` from the orchestrator's toolbelt by default, and needs all of them. Note: `arn-code-simplify-applier` is shared with `arn-code-simplify` since both skills perform the same conceptual apply work; the cross-feature scope is conveyed via the findings list itself.
 
 **Applier prompt contents:**
 
@@ -223,16 +223,16 @@ The orchestrator pre-sorts the approved findings by dependency order (if finding
 ```
 For each finding in the provided list, IN ORDER:
 
-1. Capture pre-state: `git diff --no-color HEAD > /tmp/pre-{findingId}.diff`
+1. Snapshot the files you will touch: `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-simplify/scripts/snapshot.sh save {findingId} {filesAffected}`. If you later need to edit a file not in that list (including during self-healing), run the same `save` command for it BEFORE the edit.
 2. Apply the suggested fix (Edit/Write the affected files).
 3. Run the targeted test command. Capture stdout+stderr.
-4. If tests pass: emit `[FINDING-{findingId}: applied]` to stdout. Record status `"applied"`. Continue to next finding.
+4. If tests pass: run `snapshot.sh drop {findingId}`, then emit `[FINDING-{findingId}: applied]` to stdout. Record status `"applied"`. Continue to next finding.
 5. If tests fail: attempt self-healing.
    - Re-read the test output to identify the failure cause.
    - Make a fix attempt (Edit the file).
    - Re-run the targeted test command.
    - Up to 3 self-heal attempts per finding.
-6. If tests still fail after 3 attempts: revert this finding's changes via `git apply -R /tmp/pre-{findingId}.diff` (or, if the diff is empty because no prior changes existed, run `git checkout -- {filesAffected}`). Emit `[FINDING-{findingId}: reverted - <reason>]` to stdout. Record status `"reverted"` with the failure reason and last test output. Continue to next finding.
+6. If tests still fail after 3 attempts: revert this finding's changes via `bash ${CLAUDE_PLUGIN_ROOT}/skills/arn-code-simplify/scripts/snapshot.sh restore {findingId}`. This restores only the snapshotted files and leaves all other uncommitted work alone. Never use `git checkout`, `git stash` or `git apply -R` here. Emit `[FINDING-{findingId}: reverted - <reason>]` to stdout. Record status `"reverted"` with the failure reason and last test output. Continue to next finding.
 7. Always emit a per-finding status line so the user sees progress in the transcript.
 
 After processing all findings, run ONE final targeted test pass to verify the cumulative state is consistent. Capture the result.

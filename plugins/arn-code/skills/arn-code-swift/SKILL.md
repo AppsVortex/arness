@@ -1,11 +1,11 @@
 ---
 name: arn-code-swift
 description: >-
-  This skill should be used when the user says "swift", "arness code swift",
-  "quick change", "small change", "just do this", "quick feature",
-  "quick implementation", "swift fix", "implement this quickly",
+  This skill should be used when the user says "arness code swift",
+  "small change", "just do this", "quick feature",
+  "swift fix", "implement this quickly",
   "add this quickly", "simple change", "just implement this",
-  "arn-code-swift", "swift mode", "quick task",
+  "arn-code-swift", "quick task",
   or wants a lightweight, pattern-aware implementation for a small feature
   or enhancement (1-8 files) without going through the full Arness pipeline.
   Bridges the gap between raw Claude Code and the full feature-spec/plan
