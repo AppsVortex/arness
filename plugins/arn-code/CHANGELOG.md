@@ -31,7 +31,8 @@ Release tags follow Anthropic's official plugin tag convention: `arn-code--v{ver
   - Switches: `ARNESS_HOOKS=off`, `ARNESS_HOOKS_DISABLE=session,force-push,secrets,lint`.
 - **`tooling.json`:** machine-readable lint, format and test commands returned by the codebase analyzer next to `linting.md`. Hooks run its commands only after the user approves them (`hooks/tooling-approve.sh`); an edited file needs new approval. Language-agnostic: every command comes from the project.
 - `.arness/.*-tmp/` is added to the project `.gitignore` for scratch directories.
-- CI (`.github/workflows/arn-code-ci.yml`): static checks (`scripts/ci/validate-arn-code.py`) and 37 script and hook tests (`tests/arn-code/run-tests.sh`) on Linux and macOS.
+- CI (`.github/workflows/arn-code-ci.yml`): static checks (`scripts/ci/validate-arn-code.py`) and 52 script and hook tests (`tests/arn-code/run-tests.sh`) on Linux, macOS and Windows (Git Bash).
+- **Windows:** hooks and scripts accept `C:\` paths from Claude Code, drop carriage returns from tool output, and use `python` when `python3` is missing or is the Microsoft Store stub. Hooks also compare physical paths, so a symlinked project folder (such as the macOS temp folder) works.
 
 ### Changed
 - Inner skills no longer repeat the trigger phrases of the entry points (`arn-shipping`, `arn-assessing`, `arn-reviewing-pr`, `arn-implementing`, `arn-planning`), so natural requests route through the entry points. Inner skills still trigger by name.
