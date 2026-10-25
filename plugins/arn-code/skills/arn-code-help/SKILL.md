@@ -13,7 +13,7 @@ version: 1.2.0
 
 Detect the user's current position in the Arness workflow pipeline, render an ASCII diagram with the active stage marked, and suggest the next command to run. Supports cross-plugin awareness — detects activity in Arness Spark and Arness Infra and provides hints at the bottom of the output. This skill is strictly read-only -- it never modifies files or project state.
 
-**Allowed tools:** Read, Glob, Grep only. This skill MUST NOT use Write, Edit, Bash, or Agent tools. This skill MUST NOT invoke any agents.
+**Allowed tools:** Read, Glob and Grep. When Glob or Grep is not available in the session, use read-only shell commands instead (`ls`, `find`, `test -e`, `grep -r`, `git status`, `git log`). This skill MUST NOT use Write or Edit, MUST NOT run a shell command that changes a file, and MUST NOT invoke any agents.
 
 ## Workflow
 
@@ -136,5 +136,5 @@ Common questions the user might ask:
 
 - This skill MUST NOT write or modify any files.
 - This skill MUST NOT invoke any agents.
-- All tools used must be read-only: Read, Glob, Grep.
+- All tools used must be read-only: Read, Glob, Grep, or the read-only shell commands listed above.
 - All command suggestions must use bare skill names without the plugin prefix (e.g., `/arn-code-init`, `/arn-code-plan`, `/arn-spark-discover`). Do not use the fully qualified `plugin:skill` format in user-facing text.

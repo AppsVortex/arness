@@ -72,7 +72,7 @@ Suggested fixes must be specific and actionable. Examples:
 
 Validate that references in the plan actually exist in the codebase:
 
-1. **Codebase References table** — Check that file paths listed in the INTRODUCTION.md "Codebase References" table actually exist on disk (use Glob for each path)
+1. **Codebase References table** — Check that file paths listed in the INTRODUCTION.md "Codebase References" table actually exist on disk (use Glob for each path, or `test -e` when Glob is not available)
 2. **Pattern code examples** — Spot-check 2-3 code pattern examples from INTRODUCTION.md: read the referenced file and confirm the code snippet is real and matches
 3. **Test fixtures and helpers** — Verify test fixtures/helpers mentioned in INTRODUCTION.md testing patterns actually exist (use Grep to search for fixture/helper names in test files)
 

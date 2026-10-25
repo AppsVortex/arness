@@ -20,6 +20,7 @@ Release tags follow Anthropic's official plugin tag convention: `arn-code--v{ver
 - `arn-code-batch-cve-scan` description exceeded the 1,024-character limit; both CVE skills gained a `version`.
 - Simplify skills pointed to a "Dispatch convention" section in the wrong file.
 - The no-tracker CVE fallback told users to pass `--resolution-plan`, which `arn-code-batch-cve-fix` does not accept; it now says `--proposal-path`.
+- **`arn-code-help` could not see any files** in recent Claude Code versions: it allowed only Read, Glob and Grep, and the main session no longer has Glob or Grep. It now falls back to read-only shell commands; `arn-code-review-plan` names the same fallback.
 - `arn-code-codebase-analyzer` is read-only, but its text told it to write files. It now returns `linting.md`, `tooling.json` and `security-scanning.md` content and the caller writes them.
 
 ### Added
