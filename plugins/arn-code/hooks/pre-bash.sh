@@ -8,7 +8,7 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-hook.sh"
 
 arn_hook_read_input
-[ "${ARNESS_HOOKS:-on}" = "off" ] && exit 0
+[ "${ARNESS_HOOKS:-}" = "off" ] && exit 0
 cmd=$(arn_hook_json tool_input.command)
 [ -n "$cmd" ] || exit 0
 case "$cmd" in *git*) ;; *) exit 0 ;; esac

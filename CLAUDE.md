@@ -119,7 +119,7 @@ The analyzer also returns `<code-patterns-dir>/tooling.json`: the same commands 
 
 ## Plugin Hooks (arn-code)
 
-`plugins/arn-code/hooks/hooks.json` registers hooks that act only in projects with a `## Arness` section and fail open when a tool is missing:
+`plugins/arn-code/hooks/hooks.json` registers hooks that are off by default (on with `- **Hooks:** on` in `## Arness` or `ARNESS_HOOKS=on`; `ARNESS_HOOKS=off` always wins), act only in projects with a `## Arness` section, and fail open when a tool is missing:
 
 - `SessionStart` → `session-start.sh`: config cache status line; after compaction, a pointer to the most recent plan's `PROGRESS_TRACKER.json`.
 - `PreToolUse` (Bash) → `pre-bash.sh`: blocks force-push; scans what a `git commit` will include for private keys, access tokens, key files and `.env`.

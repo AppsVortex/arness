@@ -76,8 +76,17 @@ mkdir -p "$WORK/plain" && cd "$WORK/plain" && git init -q
 check "hooks: silent outside Arness projects" \
   "$(hook_input "$WORK/plain" "" "git push --force" "" | bash "$HOOKS/pre-bash.sh")" ""
 
-# ---------------- hooks: session start ----------------
+# ---------------- hooks: off by default ----------------
 new_project hooks enabled
+check "hooks: off by default" "$(decision "$(hook_input "$PWD" "" "git push --force" "" | bash "$HOOKS/pre-bash.sh")")" allow
+check "hooks: ARNESS_HOOKS=on turns them on" "$(decision "$(hook_input "$PWD" "" "git push --force" "" | ARNESS_HOOKS=on bash "$HOOKS/pre-bash.sh")")" deny
+awk '/^## Other/{print "- **Hooks:** on"; print ""} {print}' CLAUDE.md > c && mv c CLAUDE.md
+check "hooks: the Hooks field turns them on for the project" "$(decision "$(hook_input "$PWD" "" "git push --force" "" | bash "$HOOKS/pre-bash.sh")")" deny
+check "hooks: ARNESS_HOOKS=off wins over the Hooks field" "$(decision "$(hook_input "$PWD" "" "git push --force" "" | ARNESS_HOOKS=off bash "$HOOKS/pre-bash.sh")")" allow
+check "hooks: session start is silent when off" "$(hook_input "$PWD" startup "" "" | ARNESS_HOOKS=off bash "$HOOKS/session-start.sh")" ""
+git add -A && git commit -qm hooks-on
+
+# ---------------- hooks: session start ----------------
 out=$(hook_input "$PWD" startup "" "" | bash "$HOOKS/session-start.sh")
 case "$out" in *'"additionalContext"'*Arness*) ok "session-start: adds a status line" ;; *) nok "session-start: adds a status line ($out)" ;; esac
 mkdir -p .arness/plans/feat-x && echo '{}' > .arness/plans/feat-x/PROGRESS_TRACKER.json

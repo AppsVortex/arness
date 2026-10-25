@@ -312,6 +312,10 @@ The field write in step 3 of the procedure is captured for the CLAUDE.md write i
 
 Record the chosen profile for the config write in Step 9.
 
+### Step 8d: Turn On Arness Hooks
+
+Arness hooks are off until the project or the user turns them on. Ask (using `AskUserQuestion`): **Turn on Arness hooks for this project?** 1. Yes (Recommended) — session status line, block force-push, block commits with secrets, lint after edits when Linting is enabled 2. No, keep them off. Record `on` or `off` for the config write in Step 9. The field is shared with everyone who uses this repository; one person can override it with `ARNESS_HOOKS=on` or `ARNESS_HOOKS=off`.
+
 ---
 
 ### Step 9: Persist Configuration to CLAUDE.md
@@ -331,6 +335,7 @@ Write (or update) the `## Arness` section in the project's CLAUDE.md:
 - **Docs directory:** [chosen-docs-path]
 - **Linting:** enabled | none | skip
 - **Code agent model profile:** all-opus | balanced | custom
+- **Hooks:** on | off
 - **Git:** yes | no
 - **Platform:** github | bitbucket | none
 - **Issue tracker:** github | jira | none
@@ -508,6 +513,7 @@ For each missing config field that needs a user-provided value, ask **one focuse
 | Report templates | "Use default or custom report templates?" | `default` | Step 7 |
 | Template updates | "How should Arness handle template updates?" | `ask` | Step 7 |
 | Docs directory | "Where should Arness save project documentation?" | `.arness/docs/` | Step 8 |
+| Hooks | "Turn on Arness hooks for this project?" | `on` | Step 8d |
 | Jira site | "What is your Atlassian site URL? (e.g., mycompany.atlassian.net)" | none | Step 3 |
 | Jira project | "Which Jira project should Arness use?" | list via MCP and pick | Step 3 |
 

@@ -5,8 +5,8 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-hook.sh"
 
 arn_hook_read_input
-arn_hook_enabled session || exit 0
 arn_hook_enter_project || exit 0
+arn_hook_enabled session || exit 0
 
 reason=$(bash "$ARN_LIB_DIR/cache-check.sh" 2>&1 >/dev/null)
 if [ -z "$reason" ]; then

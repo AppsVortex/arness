@@ -23,7 +23,7 @@ Release tags follow Anthropic's official plugin tag convention: `arn-code--v{ver
 - `arn-code-codebase-analyzer` is read-only, but its text told it to write files. It now returns `linting.md`, `tooling.json` and `security-scanning.md` content and the caller writes them.
 
 ### Added
-- **Plugin hooks** (`hooks/hooks.json`), active only in Arness projects and failing open:
+- **Plugin hooks** (`hooks/hooks.json`), **off by default**, active only in Arness projects and failing open. Turn them on per project with `- **Hooks:** on` in `## Arness` (`arn-code-init` asks), or per user with `ARNESS_HOOKS=on`; `ARNESS_HOOKS=off` always wins:
   - `SessionStart`: config status line; after compaction, a pointer to the plan in progress.
   - `PreToolUse` on Bash: blocks force-push (`--force-with-lease` allowed); blocks commits containing private keys, access tokens, key files or `.env` (`arness:allow-secret` marks a false positive).
   - `PostToolUse` on edits: advisory file-level lint and format checks from the project's own commands, when `Linting: enabled`.
@@ -39,7 +39,7 @@ Release tags follow Anthropic's official plugin tag convention: `arn-code--v{ver
 - Docs say "Agent tool" instead of "Task tool" for subagent dispatch.
 
 ### Compatibility
-No breaking changes. After upgrading: one silent ensure-config cache miss (schema 2), then real cache hits. Hooks are new behaviour in Arness projects; turn them off with `ARNESS_HOOKS=off`. The lint hook does nothing until `tooling.json` exists and is approved (next `arn-code-init`, or when `Linting` is set to `enabled`).
+No breaking changes. After upgrading: one silent ensure-config cache miss (schema 2), then real cache hits. Hooks are off until you turn them on, so nothing changes unless you opt in. The lint hook does nothing until `tooling.json` exists and is approved (next `arn-code-init`, or when `Linting` is set to `enabled`).
 
 ### Known issues
 - arn-spark and arn-infra ship their own copies of the old `cache-check.sh` with the same hashing bug; fixed in their next releases.

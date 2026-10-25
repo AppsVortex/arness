@@ -9,10 +9,10 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-hook.sh"
 
 arn_hook_read_input
-arn_hook_enabled lint || exit 0
 file=$(arn_hook_json tool_input.file_path)
 [ -n "$file" ] || exit 0
 arn_hook_enter_project || exit 0
+arn_hook_enabled lint || exit 0
 [ "$(arn_config_field Linting)" = "enabled" ] || exit 0
 
 tooling="$(arn_patterns_dir)/tooling.json"

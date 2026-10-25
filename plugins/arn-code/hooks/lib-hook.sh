@@ -5,9 +5,11 @@
 # hook exits 0 and lets Claude Code continue. Hooks only act inside Arness
 # projects (CLAUDE.md with a "## Arness" section).
 #
-# Switches (set in the shell or in .claude/settings.local.json "env"):
-#   ARNESS_HOOKS=off                    disable every arn-code hook
-#   ARNESS_HOOKS_DISABLE=a,b            disable some: session, force-push, secrets, lint
+# Hooks are off until the user turns them on (ARN_HOOKS_DEFAULT below):
+#   "- **Hooks:** on" in the ## Arness section   on for this project (whole team)
+#   ARNESS_HOOKS=on                               on for this user (shell or settings "env")
+#   ARNESS_HOOKS=off                              off, whatever the project says
+#   ARNESS_HOOKS_DISABLE=a,b                      disable some: session, force-push, secrets, lint
 
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/skills/arn-code-ensure-config/scripts/lib.sh"
 
@@ -17,11 +19,16 @@ arn_hook_read_input() {
   ARN_HOOK_INPUT=$(cat)
 }
 
-# arn_hook_enabled <name>: false when hooks are off or this hook is disabled.
+ARN_HOOKS_DEFAULT=off
+
+# arn_hook_enabled <name>: true when hooks are on and this hook is not disabled.
+# Call it after arn_hook_enter_project: it reads the Hooks field of the project.
 arn_hook_enabled() {
-  [ "${ARNESS_HOOKS:-on}" = "off" ] && return 1
   case ",${ARNESS_HOOKS_DISABLE:-}," in *",$1,"*) return 1 ;; esac
-  return 0
+  local v="${ARNESS_HOOKS:-}"
+  [ -n "$v" ] || v=$(arn_config_field Hooks 2>/dev/null)
+  [ -n "$v" ] || v=$ARN_HOOKS_DEFAULT
+  case "$v" in on|enabled|yes|true) return 0 ;; *) return 1 ;; esac
 }
 
 # arn_hook_json <dotted.path>: print a string field from the hook input.
