@@ -22,7 +22,10 @@ ok()   { pass=$((pass + 1)); echo "ok   - $1"; }
 nok()  { fail=$((fail + 1)); echo "FAIL - $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else nok "$1 (expected '$3', got '$2')"; fi; }
 
-json_str() { python3 -I -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$1"; }
+json_str() { printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"; }
+. "$CFG/lib.sh"
+PY=$(arn_python) || echo "note: no Python 3; lint tests skipped"
+
 hook_input() { printf '{"cwd":%s,"source":%s,"tool_input":{"command":%s,"file_path":%s}}' \
   "$(json_str "$1")" "$(json_str "$2")" "$(json_str "$3")" "$(json_str "$4")"; }
 decision() { if [ -n "$1" ]; then echo deny; else echo allow; fi; }
@@ -45,7 +48,7 @@ bash "$CFG/cache-check.sh" 2>/dev/null; check "cache: edit outside ## Arness kee
 awk '{sub(/Linting:\*\* skip/, "Linting:** none")} {print}' CLAUDE.md > c && mv c CLAUDE.md
 bash "$CFG/cache-check.sh" 2>/dev/null; check "cache: edit inside ## Arness misses" "$?" 1
 check "version: resolved from marketplace.json" "$(bash "$CFG/plugin-version.sh")" \
-  "$(python3 -I -c 'import json,sys; print([p for p in json.load(open(sys.argv[1]))["plugins"] if p["name"]=="arn-code"][0]["version"])' "$REPO/.claude-plugin/marketplace.json")"
+  "$(sed -n '/"name": *"arn-code"/,/"version"/s/.*"version": *"\([^"]*\)".*/\1/p' "$REPO/.claude-plugin/marketplace.json")"
 
 # ---------------- snapshot ----------------
 new_project snap skip
@@ -118,7 +121,8 @@ rm -f new.txt && touch .env
 check "secrets: .env with 'git add -A' denied" "$(decision "$(hook_input "$PWD" "" 'git add -A && git commit -m e' "" | bash "$HOOKS/pre-bash.sh")")" deny
 rm -f .env
 
-# ---------------- hooks: lint ----------------
+# ---------------- hooks: lint (needs Python) ----------------
+if [ -n "$PY" ]; then
 cat > .arness/tooling.json <<'EOF'
 {"version":1,"services":[
  {"path":".","extensions":[".src"],"lintFiles":"! grep -n BAD {files}","owner":"arness"},
@@ -133,20 +137,31 @@ check "lint: skips services the project owns" "$(lint svc/b/x.src)" ""
 check "lint: skips other extensions" "$(lint notes.txt)" ""
 echo " " >> .arness/tooling.json
 check "lint: edited tooling.json needs new approval" "$(lint "a file.src")" ""
+fi
+
+# ---------------- hooks: JSON without jq or Python ----------------
+. "$HOOKS/lib-hook.sh"
+j='{"cwd":"C:\\Users\\me\\a \"b\"","n":3,"t":true,"z":null,"tool_input":{"content":"{\"cwd\":\"x\"}","list":[1,{"k":"v"}],"command":"git push \u002df\nnext"}}'
+check "json: top-level string with escapes" "$(printf '%s' "$j" | arn_json_get cwd)" 'C:\Users\me\a "b"'
+check "json: nested field after a lookalike in a string" "$(printf '%s' "$j" | arn_json_get tool_input.command)" "git push -f
+next"
+check "json: number, boolean, null, missing" "$(printf '%s' "$j" | arn_json_get n),$(printf '%s' "$j" | arn_json_get t),$(printf '%s' "$j" | arn_json_get z),$(printf '%s' "$j" | arn_json_get nope)" "3,true,,"
+check "json: array element" "$(printf '%s' "$j" | arn_json_get tool_input.list.1.k)" v
 
 # ---------------- Windows ----------------
-. "$CFG/lib.sh"
 check "windows: C:\\ path to Git Bash form" "$(arn_unix_path 'C:\Users\me\my proj')" "/c/Users/me/my proj"
 check "windows: D:/ path to Git Bash form" "$(arn_unix_path 'D:/work/x')" "/d/work/x"
 check "windows: other paths unchanged" "$(arn_unix_path /home/me)" "/home/me"
+if [ -n "$PY" ]; then
 mkdir -p "$WORK/stub"; printf '#!/bin/sh\necho "Python was not found; run without arguments to install from the Microsoft Store"\nexit 9009\n' > "$WORK/stub/python3"
 printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v python3)" > "$WORK/stub/python"; chmod +x "$WORK/stub/python3" "$WORK/stub/python"
 check "windows: broken python3 stub falls back to python" "$(PATH="$WORK/stub:$PATH" arn_python)" python
 bash "$HOOKS/tooling-approve.sh" >/dev/null
 case "$(hook_input "$PWD" "" "" "$PWD/a file.src" | PATH="$WORK/stub:$PATH" bash "$HOOKS/post-edit-lint.sh")" in *advisory*) ok "windows: lint works with a broken python3 stub" ;; *) nok "windows: lint works with a broken python3 stub" ;; esac
+fi
 if command -v cygpath >/dev/null 2>&1; then
   W=$(cygpath -w "$PWD")
-  case "$(hook_input "$W" "" "" "$W\\a file.src" | bash "$HOOKS/post-edit-lint.sh")" in *advisory*) ok "windows: lint with C:\\ paths" ;; *) nok "windows: lint with C:\\ paths" ;; esac
+  [ -n "$PY" ] && case "$(hook_input "$W" "" "" "$W\\a file.src" | bash "$HOOKS/post-edit-lint.sh")" in *advisory*) ok "windows: lint with C:\\ paths" ;; *) nok "windows: lint with C:\\ paths" ;; esac
   check "windows: force-push blocked with a C:\\ cwd" "$(decision "$(hook_input "$W" "" "git push --force" "" | bash "$HOOKS/pre-bash.sh")")" deny
   check "windows: secrets scan with a C:\\ cwd" "$(decision "$(echo "k = \"AKIA""ABCDEFGHIJKLMNOP\"" > w.txt && git add w.txt && hook_input "$W" "" 'git commit -m w' "" | bash "$HOOKS/pre-bash.sh")")" deny
   git reset -q; rm -f w.txt

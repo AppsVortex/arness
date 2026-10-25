@@ -51,7 +51,59 @@ if isinstance(d, str):
 elif d is not None:
     print(json.dumps(d))
 ' "$1" | tr -d '\r'
+  else
+    printf '%s' "$ARN_HOOK_INPUT" | arn_json_get "$1"
   fi
+}
+
+# arn_json_get <dotted.path>: stdin JSON -> the string, number or boolean at the path.
+# Plain awk, for machines with neither jq nor Python (common on Windows). Objects and
+# arrays print nothing; \u escapes above U+007F stay as written.
+arn_json_get() {
+  awk -v want=".$1" '
+    function ws() { while (p <= n && index(" \t\r\n", substr(s, p, 1))) p++ }
+    function str(keep,   out, c, h, i, v) {
+      p++; out = ""
+      while (p <= n) {
+        c = substr(s, p, 1)
+        if (c == "\"") { p++; return out }
+        if (c == "\\") {
+          p++; c = substr(s, p, 1)
+          if (c == "u") {
+            h = substr(s, p + 1, 4); p += 4; v = 0
+            for (i = 1; i <= 4; i++) v = v * 16 + index("0123456789abcdef", tolower(substr(h, i, 1))) - 1
+            c = (v >= 32 && v < 127) ? sprintf("%c", v) : "\\u" h
+          } else if (c == "n") c = "\n"; else if (c == "t") c = "\t"; else if (c == "r") c = "\r"
+          else if (c == "b") c = "\b"; else if (c == "f") c = "\f"
+        }
+        if (keep) out = out c
+        p++
+      }
+      return out
+    }
+    function value(path,   c, k, i, v) {
+      ws(); c = substr(s, p, 1)
+      if (c == "{" || c == "[") {
+        p++; i = 0; ws()
+        if (substr(s, p, 1) == (c == "{" ? "}" : "]")) { p++; return }
+        while (p <= n && !found) {
+          ws()
+          if (c == "{") { k = str(1); ws(); p++ } else k = i++
+          value(path "." k); ws()
+          v = substr(s, p, 1); p++
+          if (v != ",") return
+        }
+      } else if (c == "\"") {
+        v = str(path == want); if (path == want) { print v; found = 1 }
+      } else {
+        v = ""
+        while (p <= n && !index(",]} \t\r\n", substr(s, p, 1))) { v = v substr(s, p, 1); p++ }
+        if (path == want && v != "null") { print v; found = 1 }
+      }
+    }
+    { s = (NR > 1 ? s "\n" : "") $0 }
+    END { n = length(s); p = 1; found = 0; value("") }
+  '
 }
 
 # arn_hook_path <dotted.path>: a path field from the hook input, in Git Bash form on Windows.
