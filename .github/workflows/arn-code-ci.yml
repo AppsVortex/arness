@@ -1,6 +1,6 @@
 name: arn-code CI
 
-# The quick check of every PR. The full test suite runs by hand: arn-code-full-tests.yml.
+# The quick check of every PR (test of the required check; do not merge). The full test suite runs by hand: arn-code-full-tests.yml.
 
 on:
   pull_request:
