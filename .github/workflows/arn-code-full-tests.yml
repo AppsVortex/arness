@@ -1,8 +1,9 @@
 name: arn-code full tests
 
 # Run by hand only:  gh workflow run arn-code-full-tests.yml --ref <branch>
-# Branch protection on main requires the "full-tests" check, so a PR cannot merge until this has
-# passed on its last commit. A new push needs a new run. Keep this file free of pull_request and
+# The ruleset on main requires the "full-tests" status, so a PR cannot merge until this has passed
+# on its last commit. A new push needs a new run. The report job posts that status itself, because
+# GitHub does not count the jobs of a hand run for a PR. Keep this file free of pull_request and
 # push triggers: a job skipped by a condition counts as passed for a required check.
 
 on:
@@ -38,13 +39,22 @@ jobs:
       - name: Script and hook tests (system bash; 3.2 on macOS; Git Bash on Windows)
         run: bash tests/arn-code/run-tests.sh
 
-  # The one check that branch protection requires: its name does not change with the system list.
-  full-tests:
+  # Posts the one status that the ruleset requires: its name does not change with the system list.
+  report:
     needs: tests
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
     steps:
-      - name: All systems passed
+      - name: Post the full-tests status on the commit
         env:
+          GH_TOKEN: ${{ github.token }}
           RESULT: ${{ needs.tests.result }}
-        run: test "$RESULT" = success
+        run: |
+          state=failure
+          if [ "$RESULT" = success ]; then state=success; fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" -f context=full-tests -f description="All systems: $RESULT" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          test "$state" = success
