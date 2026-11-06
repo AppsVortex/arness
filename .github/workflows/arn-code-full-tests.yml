@@ -1,0 +1,50 @@
+name: arn-code full tests
+
+# Run by hand only:  gh workflow run arn-code-full-tests.yml --ref <branch>
+# Branch protection on main requires the "full-tests" check, so a PR cannot merge until this has
+# passed on its last commit. A new push needs a new run. Keep this file free of pull_request and
+# push triggers: a job skipped by a condition counts as passed for a required check.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new run on the same branch replaces the one in progress.
+concurrency:
+  group: full-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tool versions
+        run: |
+          bash --version | head -1
+          command -v python3 && python3 --version || echo 'no working python3'
+          command -v python && python --version || echo 'no python'
+          command -v jq || echo 'no jq'
+      - name: Script and hook tests (system bash; 3.2 on macOS; Git Bash on Windows)
+        run: bash tests/arn-code/run-tests.sh
+
+  # The one check that branch protection requires: its name does not change with the system list.
+  full-tests:
+    needs: tests
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All systems passed
+        env:
+          RESULT: ${{ needs.tests.result }}
+        run: test "$RESULT" = success
